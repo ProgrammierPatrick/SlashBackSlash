@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    add this file to /usr/share/gtksourceview-3.0/language-specs/ for syntax highlighting in gedit
+-->
+<language id="sbs" name="/\" version="2.0" _section="Source">
+  <metadata>
+    <property name="globs">*.sbs</property>
+  </metadata>
+  <styles>
+    <style id="comment" name="Comment" map-to="def:comment"/>
+    <style id="string" name="String" map-to="def:string"/>
+    <style id="escaped-character" name="Escaped Character" map-to="def:special-char"/>
+    <style id="preprocessor" name="Preprocessor" map-to="def:preprocessor"/>
+    <style id="included-file" name="Included File" map-to="def:string"/>
+    <style id="char" name="Character" map-to="def:character"/>
+    <style id="keyword" name="Keyword" map-to="def:keyword"/>
+    <style id="type" name="Data Type" map-to="def:type"/>
+  </styles>
+  <definitions>
+    <context id="bss">
+      <include>
+        <context id="let" style-ref="keyword">
+          <match>\/[^\(\)\\\/\s]*</match>
+        </context>
+        <context id="lambda" style-ref="char">
+          <match>\\[^\(\)\\\/\s]*</match>
+        </context>
+      </include>
+    </context>
+  </definitions>
+</language>

@@ -1,0 +1,52 @@
+/true  (\t \f t)
+/false (\t \f f)
+/not   (\b b false true)
+/and   (\a \b a b a)
+/or    (\a \b a a b)
+/xor   (\a \b a (not b) b)
+
+/+ (\n \f \x f (n f x))
+
+/0 false
+/1 (+ 0)
+/2 (+ 1)
+/3 (+ 2)
+/4 (+ 3)
+/5 (+ 4)
+/6 (+ 5)
+/7 (+ 6)
+/8 (+ 7)
+/9 (+ 8)
+
+/tuple (\h \b \a a h b)
+
+/inc +
+/dec
+    (\n n 
+        (\p tuple (+ (p true)) (p true))
+        (tuple 0 0)
+        false
+    )
+
+/add (\n \m n + m)
+/sub (\n \m m dec n)
+/mul (\n \m \f n (m f))
+/is0 (\x x false not false)
+
+/ge (\n \m is0 (x dec y))
+/le (\n \m ge m n)
+/gt (\n \m not (le n m))
+/lt (\n \m gt m n)
+/eq (\n \m and (\ge n m) (\le n m))
+
+/Y     (\y (\x y (x x)) (\x y (x x)))
+/if    (\b \t \f b t f)
+/while (
+        /R (\r \b \f \i b i (r b f (f i)) i) 
+        \b \f \i Y R b f i
+    )
+/for (
+        /R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
+        \n \f \i Y R 0 n f i
+    )
+

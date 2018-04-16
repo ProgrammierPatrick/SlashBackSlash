@@ -41,12 +41,12 @@
 
 /Y     (\y (\x y (x x)) (\x y (x x)))
 /if    (\b \t \f b t f)
+/while.R (\r \b \f \i b i (r b f (f i)) i) 
 /while (
-        /R (\r \b \f \i b i (r b f (f i)) i) 
         \b \f \i Y R b f i
     )
+/for.R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
 /for (
-        /R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
         \n \f \i Y R 0 n f i
     )
 

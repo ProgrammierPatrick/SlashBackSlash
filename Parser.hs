@@ -1,7 +1,8 @@
 module Parser (AST(..), parser) where
 
-import Lexer
 import Control.Monad.State
+
+import Lexer
 
 -- Uppercase: AST nodes
 data AST = Var String 
@@ -12,7 +13,7 @@ data AST = Var String
 
 instance Show AST where
     show ast = showTree 0 ast where
-        padding i = concat (replicate i "   ")
+        padding i = concat (replicate i "  ")
         showTree i (Var token)           = padding i ++ show (VAR token)
         showTree i (Let token ast1 ast2) = padding i ++ "LET " ++ show (VAR token) ++ "\n" ++ showTree (i+1) ast1 ++ "\n" ++ showTree (i+1) ast2
         showTree i (App ast1  ast2)      = padding i ++ "APP\n" ++ showTree (i+1) ast1 ++ "\n" ++ showTree (i+1) ast2

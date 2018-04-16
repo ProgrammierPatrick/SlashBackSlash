@@ -22,13 +22,28 @@ Grammar:
 
 -}
 
+import Control.Concurrent (threadDelay)
+
 import Lexer
 import Parser
+import Interpreter
+
+interpret :: EvalTree -> IO ()
+interpret t = do putStrLn (show t)
+                 threadDelay 500 -- ms
+                 if (not (isDone t))
+                 then putStrLn "\n-- NextStep --" >> interpret (runStep t)
+                 else putStrLn ("-- done. --\n" ++ printResult t)
 
 main = do source <- getContents
           let tokens = lexer source
-          putStrLn (concat (map show tokens))
-          let ast = parser tokens
-          putStrLn (show ast)
+          putStrLn ("Lexer:\n" ++ concat (map show tokens))
+          putStrLn ""
 
+          let ast = parser tokens
+          putStrLn ("Parser:\n" ++ show ast)
+          putStrLn ""
+
+          putStrLn "-- Initial State --"
+          interpret (toEvalTree [] ast)
 

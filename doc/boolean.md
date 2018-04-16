@@ -22,7 +22,7 @@ Negates the Argument
 &nbsp;&nbsp;-*b*: this boolean will be negated  
 &nbsp;&nbsp;-*returns*: the negation of *b*
 
-```and a b```
+```and a b```  
 Conjungates the Arguments  
 &nbsp;&nbsp;-*a*: the first boolean to conjungate  
 &nbsp;&nbsp;-*b*: the second boolean to conjungate  

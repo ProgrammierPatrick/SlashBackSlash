@@ -31,22 +31,26 @@
 /add (\n \m n + m)
 /sub (\n \m m dec n)
 /mul (\n \m \f n (m f))
-/is0 (\x x false not false)
 
+/is0 (\x x false not false)
 /ge (\n \m is0 (x dec y))
 /le (\n \m ge m n)
 /gt (\n \m not (le n m))
 /lt (\n \m gt m n)
 /eq (\n \m and (\ge n m) (\le n m))
 
-/Y     (\y (\x y (x x)) (\x y (x x)))
-/if    (\b \t \f b t f)
-/while.R (\r \b \f \i b i (r b f (f i)) i) 
-/while (
-        \b \f \i Y while.R b f i
-    )
-/for.R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
-/for (
-        \n \f \i Y for.R 0 n f i
-    )
+/Y (\y (\x y (x x)) (\x y (x x)))
 
+/if (\b \t \f b t f)
+
+/while.R (\r \b \f \i b i (r b f (f i)) i) 
+/while   (\b \f \i Y while.R b f i)
+
+/for.R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
+/for   (\n \f \i Y for.R 0 n f i)
+
+/<N-B> (\n not (is0 n))
+/<B-N> (\b b 1 0)
+
+/div.R (\r \a \b \c gt (mul (+ c) b) a c (r a b (+ c)))
+/div   (\a \b Y div.R a b 0)

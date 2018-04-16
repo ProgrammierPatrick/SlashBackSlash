@@ -1,10 +1,13 @@
-### Boolean
-General use: ```<bool> t f```  
+# Boolean
+
+## General use
+```<bool> t f```  
 Booleans are functionals, which can control the execution flow of programs  
 &nbsp;&nbsp;-*t*: this functional will be returned if `<bool>` is true  
 &nbsp;&nbsp;-*f*: this functional will be returned if `<bool>` is false  
 &nbsp;&nbsp;-*returns*: one of the functionals *t* or *f*
 
+## Values
 ```true t f```  
 Returns the first Argument  
 &nbsp;&nbsp;-*t*: this functional will be returned  
@@ -17,6 +20,7 @@ Returns the second Argument
 &nbsp;&nbsp;-*f*: this functional will be returned  
 &nbsp;&nbsp;-*returns*: the functional *f*
 
+## Functions
 ```not b```  
 Negates the Argument    
 &nbsp;&nbsp;-*b*: this boolean will be negated  

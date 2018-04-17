@@ -4,6 +4,11 @@
 Control Structures control the execution flow of programs
 
 ## Functions
+`Y y`  
+The Y-Combinator can be used to write recursive functions  
+&nbsp;&nbsp;-*y*: a Functional that should be called recursivly  
+&nbsp;&nbsp;-*returns*: `y (Y y)`
+
 `if b t f`  
 Calls a different function depending on a Boolean  
 &nbsp;&nbsp;-*b*: the Boolean that chooses the function  
@@ -36,7 +41,7 @@ Calls *n* times *f* with a counter and the state of the loop
 &nbsp;&nbsp;-*returns*: *f* applied n times to *i* with a counter
 
 &nbsp;&nbsp;**public childs**  
-&nbsp;&nbsp;`R r c n f i`
+&nbsp;&nbsp;`R r c n f i`  
 &nbsp;&nbsp;This function will be called from for with the Y-Combinator  
 &nbsp;&nbsp;&nbsp;&nbsp;-*r*: this should be `Y R` for the recursion  
 &nbsp;&nbsp;&nbsp;&nbsp;-*c*: a Numeral that stores the current number of iteration  

@@ -18,13 +18,13 @@
 /8 (+ 7)
 /9 (+ 8)
 
-/tuple (\h \b \a a h b)
+/_T (\h \b \a a h b)
 
 /inc +
 /dec
     (\n n 
-        (\p tuple (+ (p true)) (p true))
-        (tuple 0 0)
+        (\p _T (+ (p true)) (p true))
+        (_T 0 0)
         false
     )
 
@@ -49,8 +49,70 @@
 /for.R (\r \c \n \f \i lt c n (r (+ c) n f (f c i)) i)
 /for   (\n \f \i Y for.R 0 n f i)
 
-/<N-B> (\n not (is0 n))
-/<B-N> (\b b 1 0)
-
 /div.R (\r \a \b \c gt (mul (+ c) b) a c (r a b (+ c)))
 /div   (\a \b Y div.R a b 0)
+
+/sdiv.R (\r \a \b \c ge (mul c b) a c (r a b (+ c)))
+/sdiv   (\a \b Y sdiv.R a b 0)
+
+/mod (\a \b sub a (mul (div a b) b))
+
+/_I (\n \m _T (sub n m) (sub m n))
+/add_I (
+        /P (\i \j add (i true) (j true))
+        /N (\i \j add (i false) (j false))
+        \i \j nf_I (P i j) (N i j)
+    )
+
+/sub_I (
+        /P (\i \j add (i true) (j false))
+        /N (\i \j add (i false) (j true))
+        \i \j _I (P i j) (N i j)
+    )
+
+/mul_I (
+        /P (\i \j add (mul (i true) (j true)) (mul (i false) (j false)))
+        /N (\i \j add add (mul (i true) (j false)) (mul (i false) (j true)))
+        \i \j _I (P i j) (N i j)
+    )
+
+/div_I (
+        
+        /P1 (\i \j div (i true) (j true))
+        /N1 (\i \j div (i false) (j true))
+        /P2 (\i \j div (i false) (j false))
+        /N2 (\i \j div (i true) (j false))
+        /F (\i \j is0 (j false) (
+                    (_I (P1 i j) (N1 i j))
+                ) (
+                    (_I (P2 i j) (N2 i j))
+                )
+            )
+        \i \j F (_I (i true) (i false)) (_I (j true) (j false))
+    )
+
+/sdiv_I (
+        /P1 (\i \j sdiv (i true) (j true))
+        /N1 (\i \j sdiv (i false) (j true))
+        /P2 (\i \j sdiv (i false) (j false))
+        /N2 (\i \j sdiv (i true) (j false))
+        /F (\i \j is0 (j false) (
+                    (_I (P1 i j) (N1 i j))
+                ) (
+                    (_I (P2 i j) (N2 i j))
+                )
+            )
+        \i \j F (_I (i true) (i false)) (_I (j true) (j false))
+    )
+
+/_L false
+/. (\a \l \f \x f a (l f x))
+/append .
+
+/<N-B> (\n not (is0 n))
+/<B-N> (\b b 1 0)
+/<N-I> (\n _T n 0)
+/<I-N> (\i sub (i true) (i false))
+/<B-I> (\b _T (<B-N> b) 0
+/<I-B> (\i not (eq  (i true) (i false)))
+/<T-L> (\t . (t true) (. (t false) _L))

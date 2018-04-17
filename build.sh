@@ -1,1 +1,1 @@
-ghc -dynamic --make compiler.hs
+ghc -dynamic --make -v compiler.hs

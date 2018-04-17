@@ -44,4 +44,25 @@ Exclusivly disjungates the Arguments
 &nbsp;&nbsp;-*b*: the second boolean to exclusivly disjungate  
 &nbsp;&nbsp;-*returns*: the exclusiv disjunction of *a* and *b*
 
+## Cast to
+`<N-B> n`  
+Casts a Numeral to a Boolean  
+&nbsp;&nbsp;-*n*: the Numeral that should be casted  
+&nbsp;&nbsp;-*returns*: true if *n* is not 0 else false
+
+`<I-B> i`  
+Casts a Integer to a Boolean  
+&nbsp;&nbsp;-*i*: the Integer that should be casted  
+&nbsp;&nbsp;-*returns*: true if *i* is not 0 else false
+
+## Cast from
+`<B-N> b`  
+Casts a Boolean to a Numeral  
+&nbsp;&nbsp;-*b*: the Boolean that should be casted  
+&nbsp;&nbsp;-*returns*: 1 if *b* is true else 0
+
+`<B-I> b`  
+Casts a Boolean to a Integer  
+&nbsp;&nbsp;-*b*: the Boolean that should be casted  
+&nbsp;&nbsp;-*returns*: 1 if *b* is true else 0
 

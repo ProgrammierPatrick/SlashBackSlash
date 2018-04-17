@@ -18,10 +18,20 @@ Applies *f* to *i* until `b i`is true
 &nbsp;&nbsp;-*f*: a Functional that takes one Argument that should be applied multiple times to *i*  
 &nbsp;&nbsp;-*i*: a Functional that repressents the inital state of the loop  
 &nbsp;&nbsp;-*returns*: *f* applied multiple times to *i*  
-&nbsp;**public childs**  
-&nbsp;`R r b f i`  
-&nbsp;This function will be called from while with the Y-Combinator  
-&nbsp;&nbsp;&nbsp;-*r*: this should be `Y R` for the recursion  
-&nbsp;&nbsp;&nbsp;-*b*: a Functional that takes one Argument and returns a Boolean  
-&nbsp;&nbsp;&nbsp;-*f*: a Functional that takes one Argument that should be applied to *i*  
-&nbsp;&nbsp;&nbsp;-*i*: a Functional that repressents the state of the loop  
+ 
+&nbsp;&nbsp;**public childs**  
+&nbsp;&nbsp;`R r b f i`  
+&nbsp;&nbsp;This function will be called from while with the Y-Combinator  
+&nbsp;&nbsp;&nbsp;&nbsp;-*r*: this should be `Y R` for the recursion  
+&nbsp;&nbsp;&nbsp;&nbsp;-*b*: a Functional that takes one Argument and returns a Boolean  
+&nbsp;&nbsp;&nbsp;&nbsp;-*f*: a Functional that takes one Argument that should be applied to *i*  
+&nbsp;&nbsp;&nbsp;&nbsp;-*i*: a Functional that repressents the state of the loop
+
+`for n f i`  
+Calls *n* times *f* with a counter and the state of the loop  
+&nbsp;&nbsp;-*n*: a Numeral difining how often the loop should be called  
+&nbsp;&nbsp;-*f*: a Functional that takes a Numeral and a second Argument  
+&nbsp;&nbsp;-*i*: a Functional that repressents the inital state of the loop  
+&nbsp;&nbsp;-*returns*: *f* applied n times to *i* with a counter
+
+--TODO finish this

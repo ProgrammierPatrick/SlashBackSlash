@@ -1,4 +1,4 @@
-# Numerals
+# Numeral
 
 ## General use
 `<num> f x`  

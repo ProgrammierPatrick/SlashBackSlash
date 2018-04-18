@@ -13,10 +13,11 @@ instance Show EvalTree where
   show t = showTree 0 t where
     pad 0                       = ""
     pad i                       = "  " ++ pad (i-1)
-    showEnv  i []               = "[]"
-    showEnv  i (e:env)          = "[\n" ++ showEnv' (i+2) (e:env)
-    showEnv' i []               = pad (i-1) ++ "]\n" ++ tail (pad (i-1))
-    showEnv' i ((s,t):env)      = pad i ++ "'" ++ s ++ "' =>\n" ++ showTree (i+1) t ++ "\n" ++ showEnv' i env
+    showEnv i _ = "[]"
+--    showEnv  i []               = "[]"
+--    showEnv  i (e:env)          = "[\n" ++ showEnv' (i+2) (e:env)
+--    showEnv' i []               = pad (i-1) ++ "]\n" ++ tail (pad (i-1))
+--    showEnv' i ((s,t):env)      = pad i ++ "'" ++ s ++ "' =>\n" ++ showTree (i+1) t ++ "\n" ++ showEnv' i env
     showTree i (EVar env str)   = pad i ++ "eVAR " ++ showEnv i env ++ " '" ++ str ++ "'"
     showTree i (EApp env t1 t2) = pad i ++ "eAPP " ++ showEnv i env ++ "\n" ++ showTree (i+1) t1 ++ "\n" ++ showTree (i+1) t2
     showTree i (EAbs env str t) = pad i ++ "eABS " ++ showEnv i env ++ " '" ++ str ++ "'\n" ++ showTree (i+1) t

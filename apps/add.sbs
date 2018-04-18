@@ -1,0 +1,3 @@
+#include <default.sbs>
+add (\f\x f(f x)) (\f\x x)
+

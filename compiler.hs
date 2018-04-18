@@ -28,8 +28,11 @@ import Lexer
 import Parser
 import Interpreter
 
+showState :: EvalTree -> IO ()
+showState = putStrLn . printResult
+
 interpret :: EvalTree -> IO ()
-interpret t = do putStrLn (show t)
+interpret t = do showState t
                  threadDelay 500 -- ms
                  if (not (isDone t))
                  then putStrLn "\n-- NextStep --" >> interpret (runStep t)

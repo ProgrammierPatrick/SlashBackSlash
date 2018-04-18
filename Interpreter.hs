@@ -31,14 +31,18 @@ toEvalTree env ast = case ast of
   (Abs str ast)       -> EAbs env str (toEvalTree env ast)
   Empty               -> error "Empty should not be needed anymore"
 
+isInEnv :: Env -> String -> Bool
+isInEnv []          str = False
+isInEnv ((s,t):env) str = if s == str then True else isInEnv env str
+
 getEnv :: Env -> String -> EvalTree
 getEnv []          str = error("Variable " ++ str ++ " in not in environment.")
 getEnv ((s,t):env) str = if s == str then t else getEnv env str
 
 pushEnv :: Env -> EvalTree -> EvalTree
 pushEnv env (EVar e str)   = EVar (env ++ e) str
-pushEnv env (EApp e t1 t2) = EApp (env ++ e) t1 t2 
-pushEnv env (EAbs e str t) = EAbs (env ++ e) str t
+pushEnv env (EApp e t1 t2) = EApp (env ++ e) (pushEnv env t1) (pushEnv env t2) 
+pushEnv env (EAbs e str t) = EAbs (env ++ e) str (pushEnv env t)
 
 runStep :: EvalTree -> EvalTree
 runStep (EVar env str)   = getEnv env str
@@ -51,6 +55,7 @@ isDone (EAbs env str t) = True
 isDone _                = False
 
 printResult :: EvalTree -> String
+-- printResult (EVar e str) = if isInEnv e str then printResult (getEnv e str) else str
 printResult (EVar e str) = str
-printResult (EApp e t1 t2) = printResult t1 ++ " " ++ printResult t2
+printResult (EApp e t1 t2) = "(" ++ printResult t1 ++ " " ++ printResult t2 ++ ")"
 printResult (EAbs e str t) = "(\\" ++ str ++ " " ++ printResult t ++ ")"

@@ -1,0 +1,3 @@
+#include <default.sbs>
+is0 (sub (add 3 2) (add 5 0))
+

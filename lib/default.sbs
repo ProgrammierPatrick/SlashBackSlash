@@ -7,7 +7,7 @@
 
 /+ (\n \f \x f (n f x))
 
-/0 false
+/0 (\f \x x)
 /1 (+ 0)
 /2 (+ 1)
 /3 (+ 2)
@@ -159,7 +159,7 @@
 /<B-N> (\b b 1 0)
 /<N-I> (\n _T n 0)
 /<I-N> (\i sub (i true) (i false))
-/<B-I> (\b _T (<B-N> b) 0
+/<B-I> (\b _T (<B-N> b) 0)
 /<I-B> (\i not (eq  (i true) (i false)))
 /<T-L> (\t . (t true) (. (t false) _L))
 /<L-T> (\l _T (head l) (tail l))

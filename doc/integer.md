@@ -49,36 +49,45 @@ Divides the values of the inputs away from 0
 &nbsp;&nbsp;-*m*: a Integer that should be the divisor  
 &nbsp;&nbsp;-*returns*: *n* / *m* rounded away from 0
 
-## Comparison  
---TODO this part is not yet Implemented
-`ìs0 n`  
+## Comparison
+`ìs0_I i`  
 Tests if argument is 0  
-&nbsp;&nbsp;-*n*: the numeral that should be checked  
-&nbsp;&nbsp;-*returns*: if *n* is 0 then true else false
+&nbsp;&nbsp;-*i*: the Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is 0 then true else false
 
-`ge n m`  
+`pos_I i`  
+Tests if argument is greater than 0  
+&nbsp;&nbsp;-*i*: the Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is greater than 0 then true else false
+
+`neg_I i`  
+Tests if argument is less than 0  
+&nbsp;&nbsp;-*i*: the Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is less than 0 then true else false
+
+`ge_I i j`  
 Tests if first argument is greater or equal to second argument  
-&nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
-&nbsp;&nbsp;-*returns*: if *n* is greater or equal *m* then true else false
+&nbsp;&nbsp;-*i*: the first Integer that should be checked  
+&nbsp;&nbsp;-*j*: the second Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is greater or equal *j* then true else false
 
-`gt n m`  
+`gt_I i j`  
 Tests if first argument is greater then second argument  
-&nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
-&nbsp;&nbsp;-*returns*: if *n* is greater *m* then true else false
+&nbsp;&nbsp;-*i*: the first Integer that should be checked  
+&nbsp;&nbsp;-*j*: the second Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is greater *j* then true else false
 
-`le n m`  
+`le_I i j`  
 Tests if first argument is less or equal to second argument  
-&nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
-&nbsp;&nbsp;-*returns*: if *n* is less or equal *m* then true else false
+&nbsp;&nbsp;-*i*: the first Integer that should be checked  
+&nbsp;&nbsp;-*j*: the second Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is less or equal *j* then true else false
 
-`lt n m`  
+`lt_I i j`  
 Tests if first argument is less then second argument  
-&nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
-&nbsp;&nbsp;-*returns*: if *n* is less *m* then true else false
+&nbsp;&nbsp;-*i*: the first Integer that should be checked  
+&nbsp;&nbsp;-*j*: the second Integer that should be checked  
+&nbsp;&nbsp;-*returns*: if *i* is less *j* then true else false
 
 ## Cast to
 `<B-I> b`  

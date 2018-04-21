@@ -68,25 +68,25 @@ Tests if argument is 0
 `ge n m`  
 Tests if first argument is greater or equal to second argument  
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
+&nbsp;&nbsp;-*m*: the second numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is greater or equal *m* then true else false
 
 `gt n m`  
 Tests if first argument is greater then second argument  
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
+&nbsp;&nbsp;-*m*: the second numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is greater *m* then true else false
 
 `le n m`  
 Tests if first argument is less or equal to second argument  
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
+&nbsp;&nbsp;-*m*: the second numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is less or equal *m* then true else false
 
 `lt n m`  
 Tests if first argument is less then second argument  
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
-&nbsp;&nbsp;-*n*: the second numeral that should be checked  
+&nbsp;&nbsp;-*m*: the second numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is less *m* then true else false
 
 ## Cast to

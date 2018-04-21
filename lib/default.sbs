@@ -19,6 +19,8 @@
 /9 (+ 8)
 
 /_T (\h \b \a a h b)
+/first (\p p true)
+/second (\p p false)
 
 /inc +
 /dec
@@ -58,6 +60,27 @@
 /mod (\a \b sub a (mul (div a b) b))
 
 /_I (\n \m _T (sub n m) (sub m n))
+
+/0_I (\b _I 0 0 b)
+/1_I (\b _I 1 0 b)
+/2_I (\b _I 2 0 b)
+/3_I (\b _I 3 0 b)
+/4_I (\b _I 4 0 b)
+/5_I (\b _I 5 0 b)
+/6_I (\b _I 6 0 b)
+/7_I (\b _I 7 0 b)
+/8_I (\b _I 8 0 b)
+/9_I (\b _I 9 0 b)
+/-1_I (\b _I 0 1 b)
+/-2_I (\b _I 0 2 b)
+/-3_I (\b _I 0 3 b)
+/-4_I (\b _I 0 4 b)
+/-5_I (\b _I 0 5 b)
+/-6_I (\b _I 0 6 b)
+/-7_I (\b _I 0 7 b)
+/-8_I (\b _I 0 8 b)
+/-9_I (\b _I 0 9 b)
+
 /add_I (
         /P (\i \j add (i true) (j true))
         /N (\i \j add (i false) (j false))
@@ -104,10 +127,33 @@
             )
         \i \j F (_I (i true) (i false)) (_I (j true) (j false))
     )
+/pos_I (\i not (is0 (_I (i true) (i false) true)))
+/neg_I (\i not (is0 (_I (i true) (i false) false)))
+/is0_I (\i not (and (pos_I i) (neg_I i)))
+/eq_I (\i \j eq ((i true) + (j false)) ((i false) + (j true)))
+/gt_I (\i \j pos_I (sub_I i j))
+/lt_I (\i \j neg_I (sub_I i j))
+/ge_I (\i \j lt_I j i)
+/le_I (\i \j gt_I j i)
 
 /_L false
 /. (\a \l \f \x f a (l f x))
 /append .
+/len.F (\f \a \x f x)
+/len (\l \f \x l (len.F f) x)
+/head (\l l true 0)
+/isEmpty (\l l (\a \b false) true)
+/tail
+    (\l l 
+        (\a \p _T (append a (p true)) (p true))
+        (_T 0 0)
+        false
+    )
+/reduce (\f \l tail l f (head l))
+/apply.R (\r \f \l isEmpty l f (r (f (head l)) (tail l)))
+/apply (\f \l Y apply.R f l)
+/get (\l \n head (n tail l))
+/concat (\a \b a . b)
 
 /<N-B> (\n not (is0 n))
 /<B-N> (\b b 1 0)
@@ -116,3 +162,5 @@
 /<B-I> (\b _T (<B-N> b) 0
 /<I-B> (\i not (eq  (i true) (i false)))
 /<T-L> (\t . (t true) (. (t false) _L))
+/<L-T> (\l _T (head l) (tail l))
+

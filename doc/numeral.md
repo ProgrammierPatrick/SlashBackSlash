@@ -3,7 +3,7 @@
 ## General use
 `<num> f x`  
 Numerals represent numbers. They can be used to aplly functions repeatedly  
-&nbsp;&nbsp;-*f*: a functional that should be applied `<num>` times  
+&nbsp;&nbsp;-*f*: a functional with one argument that should be applied `<num>` times  
 &nbsp;&nbsp;-*x*: a functional *f* should be applied to  
 &nbsp;&nbsp;-*returns*: the result of applying *f* `<num>` times to *x*
 

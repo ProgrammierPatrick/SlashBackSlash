@@ -4,14 +4,16 @@
 Container are Functionals that can contain multiple Functionals
 
 ## Tuple
-Tuples are container which conatains 2 Elements
+`<tuple> a`  
+Tuples are container which conatains 2 Elements  
+&nbsp;&nbsp;-*a*: a Boolean controling the access to the Elements  
+&nbsp;&nbsp;-*returns*: if true returns the first ELement els the second
 
-`_T h b a`  
+`_T h b`  
 This function returns a tuple  
 &nbsp;&nbsp;-*h*: the first Functional of the Tuple  
 &nbsp;&nbsp;-*b*: the second Functional of the Tuple  
-&nbsp;&nbsp;-*a*: a Boolesn controling the access to the Elements  
-&nbsp;&nbsp;-*returns*: *h* if *a* is true else *b*
+&nbsp;&nbsp;-*returns*: the Tuple (*h*, *b*)
 
 `first p`  
 returns the first element of an tuple  
@@ -30,7 +32,6 @@ Lists are container which can contain any amount of Elements
 &nbsp;&nbsp;-*x*: the inital value  
 &nbsp;&nbsp;-*returns*: *f* applied to each Element of the list and *x*
 
-
 `_L`  
 The function returns an empty list  
 &nbsp;&nbsp;-*returns*:an empty List
@@ -47,7 +48,24 @@ This function returns the length of the List
 &nbsp;&nbsp;-*l*: a List  
 &nbsp;&nbsp;-*returns* the length of *l*
 
---TODO add missing
+`head \l`  
+this function returns the first Element of the list  
+&nbsp;&nbsp;-*l*: a List  
+&nbsp;&nbsp;-*returns*: the head of the List
 
+`tail \l`  
+this function returns a copy of a List without the first Element  
+&nbsp;&nbsp;-*l*: a List  
+&nbsp;&nbsp;-*returns*: the tail of the List
 
+`isEmpty l`
+this function checks if the List is Empty  
+&nbsp;&nbsp;-*l*: a List  
+&nbsp;&nbsp;-*returns*: true if List is a Empty List else return false
+
+`get l n`  
+this Function returns the n-th Element of List  
+&nbsp;&nbsp;-*l*: a List  
+&nbsp;&nbsp;-*n*: a number  
+&nbsp;&nbsp;-*returns*: returns the *n*-th element from *n*
 

@@ -1,0 +1,11 @@
+#include <io.sbs>
+#include <default.sbs>
+
+ioAppend (ioPut 20) (ioPut 40) (\f f)
+
+/*
+  \state0
+    /pair1 ((ioPut 20) state0)
+	/state1 (Tup2_second pair1)
+    (ioPut 30) state1
+*/

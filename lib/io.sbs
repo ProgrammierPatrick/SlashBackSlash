@@ -1,0 +1,21 @@
+// IO Monad:
+// build list of IO Ops 
+
+// execute two functions one after another
+/ioAppend (\action1 \action2 \state0
+    /pair1 (action1 state0)
+	/state1 (Tup2_second pair1)
+    action2 state1
+)
+
+/ioBind (\action1 \action2 \state0
+	/pair1 (action1 state0)
+	/return1 (Tup2_first pair1)
+	/state1 (Tup2_second pair1)
+	action2 return1
+)
+
+
+// accepts positive integer and print as normal ascii 8bit char
+/ioPut __BUILDIN__IO_PUT__
+/ioPut IO

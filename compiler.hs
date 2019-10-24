@@ -35,9 +35,13 @@ interpret :: EvalTree -> IO ()
 interpret t = do showState t
                  threadDelay 500 -- ms
                  if (not (isDone t))
-                 then putStrLn "\n-- NextStep --" >> interpret (runStep t)
+                 then do
+                    putStrLn "\n-- NextStep --"
+                    newState <- runStep t
+                    interpret (newState)
                  else putStrLn ("-- done. --\n" ++ printResult t)
 
+main :: IO ()
 main = do source <- getContents
           let tokens = lexer source
           putStrLn ("Lexer:\n" ++ concat (map show tokens))

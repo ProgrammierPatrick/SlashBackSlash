@@ -44,12 +44,17 @@ pushEnv env (EVar e str)   = EVar (env ++ e) str
 pushEnv env (EApp e t1 t2) = EApp (env ++ e) (pushEnv env t1) (pushEnv env t2) 
 pushEnv env (EAbs e str t) = EAbs (env ++ e) str (pushEnv env t)
 
-runStep :: EvalTree -> EvalTree
-runStep (EVar env str)   = getEnv env str
-runStep (EApp env t1 t2) = case t1 of
-                             EAbs e2 str t -> pushEnv ((str, t2):e2) t
-                             _             -> EApp env (runStep t1) t2
-runStep (EAbs env str t) = EAbs env str t -- do nothing
+runStep :: EvalTree -> IO EvalTree
+runStep (EVar env str)                = return (getEnv env str)
+runStep (EApp env (EVar e2 "__BUILDIN__IO_PUT__") t2)   = do
+                                          printLn " IO Op " ++ t2
+                                          return (EAbs [] "IOTYPE" 
+                                                 (EVar [] "IOTYPE"))
+runStep (EApp env (EAbs e2 str t) t2) = return (pushEnv ((str, t2):e2) t)
+runStep (EApp env t1 t2)              = do
+                                          newT1 <- runStep t1           
+                                          runStep (EApp env newT1 t2)
+runStep (EAbs env str t)              = return (EAbs env str t) -- do nothing
 
 isDone (EAbs env str t) = True
 isDone _                = False

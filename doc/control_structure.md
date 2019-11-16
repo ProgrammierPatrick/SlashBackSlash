@@ -14,7 +14,7 @@ Calls a different function depending on a Boolean
 &nbsp;&nbsp;-*b*: the Boolean that chooses the function  
 &nbsp;&nbsp;-*t*: the Functional that should be returned if *b* is true  
 &nbsp;&nbsp;-*f*: the Functional that should be returned if *b* is false  
-&nbsp;&nbsp;-*returns*: either *t* or *b*  
+&nbsp;&nbsp;-*returns*: either *t* or *f*  
 &nbsp;&nbsp;-*note*: `if b` does the same as `b`
 
 `while b f i`  

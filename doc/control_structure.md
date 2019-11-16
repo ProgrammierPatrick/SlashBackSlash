@@ -18,7 +18,7 @@ Calls a different function depending on a Boolean
 &nbsp;&nbsp;-*note*: `if b` does the same as `b`
 
 `while b f i`  
-Applies *f* to *i* until `b i`is true  
+Applies *f* to *i* until `b i`is false  
 &nbsp;&nbsp;-*b*: a Functional that takes one Argument and returns a Boolean  
 &nbsp;&nbsp;-*f*: a Functional that takes one Argument that should be applied multiple times to *i*  
 &nbsp;&nbsp;-*i*: a Functional that repressents the inital state of the loop  

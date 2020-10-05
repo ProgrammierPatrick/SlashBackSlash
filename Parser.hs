@@ -24,9 +24,9 @@ parser tokens = evalState (parseExpr (head tokens)) tokens
 -- parser list = Let "abc" (App (Abs "def" (Var "ghi")) (Var "jkl"))
 
 nextToken :: State [Token] Token
-nextToken = do (t:ts) <- get
-               if t == EOF then return EOF
-               else put ts >> return (head ts)
+nextToken = do l <- get
+               if (head l) == EOF then return EOF
+               else put (tail l) >> return (head (tail l))
 
 currentToken :: State [Token] Token
 currentToken = do t <- get

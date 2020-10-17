@@ -1,0 +1,5 @@
+test_case \x x
+
+/id (\x x)
+/a id
+a

@@ -33,6 +33,7 @@ showState = putStrLn . printResult
 
 interpret :: EvalTree -> IO ()
 interpret t = do showState t
+                 putStrLn (show t)
                  threadDelay 500 -- ms
                  if (not (isDone t))
                  then putStrLn "\n-- NextStep --" >> interpret (runStep t)

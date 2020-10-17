@@ -1,0 +1,7 @@
+test_case ERROR
+# runtime error: unbounded variable 'zzz' found.
+
+/f (\x zzz x)
+/zzz (\x x)
+
+f (\x x x)

@@ -1,0 +1,5 @@
+test_case (\a \b b a b) (\x x x)
+
+(\hallo \test test hallo test) (\hallo hallo hallo)
+
+# should evaluate to \b b (\x x x) b, or \test test (\hallo hallo hallo) test

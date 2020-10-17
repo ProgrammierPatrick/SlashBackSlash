@@ -1,0 +1,65 @@
+# LANG SBS
+# MAIN LIBRARY
+
+/id (\x x)
+
+# =====
+# Logic
+# =====
+
+/true  (\t \f t)
+/false (\t \f f)
+
+/and (\a \b a b a)
+/or  (\a \b a a b)
+/not (\a a false true)
+/xor (\a \b a (not b) b)
+
+# =======
+# Numbers
+# =======
+/inc (\n \f \x f (n f x))
+
+/add (\a \b a inc b)
+/sub (\a \b b dec a)
+/mul (\a \b \f n (m f))
+
+/0 (\f \x x)
+/1 (inc 0)
+/2 (inc 1)
+/3 (inc 2)
+/4 (inc 3)
+/5 (inc 4)
+/6 (inc 5)
+/7 (inc 6)
+/8 (inc 7)
+/9 (inc 8)
+
+# ======
+# Tuples
+# ======
+/tup (\a \b \f f a b)
+/first true
+/second false
+
+# make tuple of 1, 2:
+# /t (tup 1 2)
+# get first element
+# /f (t first)
+# get second element
+# /s (t second)
+
+# =====
+# Lists
+# =====
+
+# empty list
+/{} (tup id true)
+
+# append element a at front to list b
+/cons (\a \l tup (tup a false) l)
+
+# get head and tail from list
+/head (\t first (first l))
+/tail second
+/eq{} second

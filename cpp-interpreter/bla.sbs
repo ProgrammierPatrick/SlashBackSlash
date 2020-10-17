@@ -1,0 +1,14 @@
+# hallo
+# welt
+
+import lang.sbs
+import io.sbs
+
+# / true (\t \t t)
+# / false (\t \f f)
+
+# hi
+# false (\x x x) (\x x x x)
+
+>>= get (\c (>>= get (\d tup c d)))
+

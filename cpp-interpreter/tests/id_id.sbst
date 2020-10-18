@@ -2,3 +2,15 @@ test_case (\x x)
 
 /id (\x x)
 id id id
+
+# /id (\x x) (id id) id
+# [id] ((id id) id)
+# [id] ([id] (id id) [id] id)
+#
+# /a (\x b) /b (a a) (a b)
+# [a:(\x b)] /b (a a) (a b)
+# [a:(\x b) b:[a](a a)] (a b)
+#
+#
+# [q] (\x [f] ffff) [a] aaa
+# [x:[q,a]aaa, q, f] ffff

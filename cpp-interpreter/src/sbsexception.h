@@ -4,6 +4,8 @@
 #include <exception>
 #include <string>
 
+#include "model/file_loc.h"
+
 class SBSException : public std::exception {
 public:
 
@@ -13,14 +15,14 @@ public:
         RUNTIME
     };
 
-    SBSException(Origin origin, const std::string& msg, const std::string& filename, int line, int pos)
-        : origin(origin), msg(msg), filename(filename), line(line), pos(pos) {
+    SBSException(Origin origin, const std::string& msg, const FileLoc& loc)
+        : origin(origin), msg(msg), loc(loc) {
             std::string errorName = "UnknownError";
             if(origin == Origin::LEXER) errorName = "LexerError";
             if(origin == Origin::PARSER) errorName = "ParserError";
             if(origin == Origin::RUNTIME) errorName = "RuntimeError";
 
-            fullMessage = filename + ":" + std::to_string(line) + ":" + std::to_string(pos) + " " + errorName + ": " + msg;
+            fullMessage = *loc.filename + ":" + std::to_string(loc.line) + ":" + std::to_string(loc.pos) + " " + errorName + ": " + msg;
         }
 
     const char* what() const throw() {
@@ -29,9 +31,7 @@ public:
 
     Origin origin;
     std::string msg;
-    std::string filename;
-    int line;
-    int pos;
+    FileLoc loc;
 
 private:
     std::string fullMessage;

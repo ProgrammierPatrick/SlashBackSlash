@@ -1,0 +1,7 @@
+test_case (\x x x x)
+
+/a (\x x)
+/b (\y a y)
+/c (\z z z z)
+
+a b c

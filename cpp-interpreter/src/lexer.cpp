@@ -26,7 +26,7 @@ bool isVariableChar(char c) {
 
 struct Lexer {
     std::set<std::string> lexedFiles;
-    std::vector<Token> tokens;
+    List<Token> tokens;
 
     std::string testResult;
 
@@ -59,6 +59,8 @@ struct Lexer {
             return static_cast<bool>(file.get(c));
         };
 
+        auto filenamePtr = std::make_shared<const std::string>(filename);
+
         if(!file.get(c)) return;
 
         while (file) {
@@ -66,7 +68,7 @@ struct Lexer {
             if (isWhitespace(c)) {
                 nextChar();
             } else if(c == '#') {
-                while(c != '\n')
+                while(c != '\n' && file)
                     nextChar();
             }
             else if (isVariableChar(c)) {
@@ -109,18 +111,17 @@ struct Lexer {
                     testResult = str;
 
                 } else {
-                    tokens.push_back(Token(Token::Type::VAR, value, filename, var_line, var_pos, fromLib));
+                    tokens.push_front(Token::makeVar(std::make_shared<std::string>(value), FileLoc(filenamePtr, var_line, var_pos, fromLib)));
                 }
 
             }
             else {
-                Token::Type type = Token::Type::END;
-                if(c == '(') type = Token::Type::LPAR;
-                else if(c == ')') type = Token::Type::RPAR;
-                else if(c == '/') type = Token::Type::SLASH;
-                else if(c == '\\') type = Token::Type::BSLASH;
+                FileLoc loc(filenamePtr, line, pos, fromLib);
 
-                tokens.push_back(Token(type, filename, line, pos, fromLib));
+                if (c == '(')       tokens.push_front(Token::makeLPar(loc));
+                else if (c == ')')  tokens.push_front(Token::makeRPar(loc));
+                else if (c == '/')  tokens.push_front(Token::makeSlash(loc));
+                else if (c == '\\') tokens.push_front(Token::makeBSlash(loc));
 
                 nextChar();
             }
@@ -159,30 +160,35 @@ struct Lexer {
         }
         #endif
 
-        throw SBSException(SBSException::Origin::LEXER, "Could not open file '" + name + "' imported from '" + origin + "'.", name, 0, 0);
+        throw SBSException(SBSException::Origin::LEXER, "Could not open file '" + name + "' imported from '" + origin + "'.", FileLoc(std::make_shared<std::string>(name), 0, 0, false));
         return "";
     }
 };
 
-std::vector<Token> runLexer(const std::string& filename) {
+List<Token> runLexer(const std::string& filename) {
     Lexer lexer;
     std::ifstream file(filename);
     lexer.runLexer(filename, false, file);
 
-    lexer.tokens.push_back(Token(Token::Type::END, filename, lexer.tokens.back().line + 1, 0, false));
+    if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
 
-    return lexer.tokens;
+    lexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), lexer.tokens.back().loc.line + 1, 0, false)));
+
+    return List<Token>::reverse(lexer.tokens);
 }
 
-void runLexerForTesting(const std::string& filename, std::vector<Token>& fileTokens, std::vector<Token>& testTokens, bool& expectError) {
+void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, List<Token>& testTokens, bool& expectError) {
     Lexer lexer;
     std::ifstream file(filename);
     lexer.runLexer(filename, false, file);
 
-    lexer.tokens.push_back(Token(Token::Type::END, "", -1, -1, false));
+    if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
+
+    lexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename),lexer.tokens.back().loc.line + 1, 0, false)));
+    fileTokens = List<Token>::reverse(lexer.tokens);
 
     if(lexer.testResult == "") {
-        throw SBSException(SBSException::Origin::LEXER, "program called in test mode, but file is missing test_case directive.", filename, 0, 0);
+        throw SBSException(SBSException::Origin::LEXER, "program called in test mode, but file is missing test_case directive.", FileLoc(std::make_shared<std::string>(filename), 0, 0, false));
     }
 
     if(lexer.testResult == "ERROR") {
@@ -194,23 +200,10 @@ void runLexerForTesting(const std::string& filename, std::vector<Token>& fileTok
         std::stringstream sstream(lexer.testResult);
         resultLexer.runLexer(filename, false, sstream);
 
-        fileTokens = lexer.tokens;
-        testTokens = resultLexer.tokens;
+        if(resultLexer.tokens.size() == 0) throw std::runtime_error("runLexer(): expeted expression in file " + filename + " is empty.");
 
-        fileTokens.push_back(Token(Token::Type::END, filename, fileTokens.back().line + 1, 0, false));
-        testTokens.push_back(Token(Token::Type::END, filename, testTokens.back().line + 1, 0, false));
-    }
-}
+        resultLexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), resultLexer.tokens.back().loc.line + 1, 0, false)));
+        testTokens = List<Token>::reverse(resultLexer.tokens);
 
-
-std::string Token::toString() const {
-    switch (type) {
-        case Token::Type::VAR: return "\'" + value + "\' ";
-        case Token::Type::LPAR: return "( ";
-        case Token::Type::RPAR: return ") ";
-        case Token::Type::SLASH: return "/ ";
-        case Token::Type::BSLASH: return "\\ ";
-        case Token::Type::END: return "#";
-        default: return "UNKNOWN_TOKEN_TYPE";
     }
 }

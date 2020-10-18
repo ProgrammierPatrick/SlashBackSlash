@@ -1,12 +1,10 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
-#include "ast.h"
-
-#include <variant>
 #include <memory>
-#include <vector>
 #include <string>
+
+#include "model/ast.h"
 
 class Exec {
 public:
@@ -23,21 +21,9 @@ public:
 private:
 
     std::shared_ptr<AST> root;
-    // std::vector<AST::Binding> globalBindings;
 
     bool running = true;
     int currentStep = 0;
 };
 
 #endif
-
-
-
-/*
-/ true (\t \t t)
-/ false (\t \f f)
-
-false (\x x x) (\x x x x)
-:: insert binding (because no app with abs to the left)
-(\t \f f) (\x x x) (\x x x x)
-*/

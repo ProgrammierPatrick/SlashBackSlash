@@ -7,6 +7,8 @@
 #include "parser.h"
 #include "exec.h"
 #include "sbsexception.h"
+#include "model/list.h"
+#include "model/to_string.h"
 
 int main(int argc, char **argv) {
     CLI::App app{"SlashBackSlash"};
@@ -34,10 +36,24 @@ int main(int argc, char **argv) {
     CLI11_PARSE(app, argc, argv);
 
     if(test) {
-        std::vector<Token> tokens;
-        std::vector<Token> expectedTokens;
+        List<Token> tokens;
+        List<Token> expectedTokens;
         bool expectError;
         runLexerForTesting(filename, tokens, expectedTokens, expectError);
+
+        if(printLexer) {
+            if(!expectError){
+                std::cerr << "expected: ";
+                for(auto t : expectedTokens)
+                    if(showLib || !t.loc.fromLib)
+                        std::cerr << toString(t);
+                std::cerr << std::endl;
+            }
+            for(auto t : tokens)
+                if(showLib || !t.loc.fromLib)
+                    std::cerr << toString(t);
+            std::cerr << std::endl;
+        }
 
         if(expectError) {
             bool receivedException = true;
@@ -61,7 +77,7 @@ int main(int argc, char **argv) {
                 while(!exec.isDone()) exec.step(false);
                 std::string resultState = exec.printState(false);
 
-                if(!AST::equals(*expectedExec.getRoot(), *exec.getRoot())) {
+                if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
                     std::cerr << "Test failed: result of '" << filename << "' does not match expected result." << std::endl
                         << "expected: " << expectedState << std::endl
                         << "result: " << resultState << std::endl;
@@ -79,35 +95,62 @@ int main(int argc, char **argv) {
 
     }
     else {
+        List<Token> tokens;
         try {
-            auto tokens = runLexer(filename);
-
-            if(printLexer) {
-                for(auto t : tokens)
-                    if(showLib || !t.fromLib)
-                        std::cerr << t.toString();
-                std::cerr << std::endl;
-            }
-
-            std::shared_ptr<AST> ast = parse(tokens);
-
-            if(printAST)
-                std::cerr << ASTToString(*ast, showLib) << std::endl;
-
-            Exec exec(ast);
-            
-            if(trace) std::cerr << exec.printState(showLib, showBindValues) << std::endl;
-            
-            while(!exec.isDone()) {
-                exec.step(!showLib);
-                if(trace && !exec.isDone()) std::cerr << exec.printState(showLib, showBindValues) << std::endl;
-            }
-
-            return 0;
-        }
-        catch(SBSException& e) {
-            std::cerr << e.what() << std::endl;
+            tokens = runLexer(filename);
+        } catch(std::exception& e) {
+            std::cerr << "Exception in runLexer(" << filename << "): " << e.what() << std::endl;
             return -1;
         }
+
+        if(printLexer) {
+            for(auto t : tokens)
+                if(showLib || !t.loc.fromLib)
+                    std::cerr << toString(t);
+            std::cerr << std::endl;
+        }
+
+        std::shared_ptr<AST> ast;
+        try {
+            ast = parse(tokens);
+        } catch(std::exception& e) {
+            std::cerr << "Exception in parse(tokens): " << e.what() << std::endl;
+            return -1;
+        }
+
+        if(printAST)
+            std::cerr << toString(*ast, showLib) << std::endl;
+
+        Exec exec(ast);
+            
+        if(trace) {
+            try {
+                std::cerr << exec.printState(showLib, showBindValues) << std::endl;
+            } catch(std::exception& e) {
+                std::cerr << "Exception in Exec::printState(): " << e.what() << std::endl;
+                return -1;
+            }
+        }
+            
+        while(!exec.isDone()) {
+
+            try {
+                exec.step(!showLib);
+            } catch(std::exception& e) {
+                std::cerr << "Exception in Exec::step(): " << e.what() << std::endl;
+                return -1;
+            }
+
+            if(trace && !exec.isDone()) {
+                try {
+                    std::cerr << exec.printState(showLib, showBindValues) << std::endl;
+                } catch(std::exception& e) {
+                    std::cerr << "Exception in Exec::printState(): " << e.what() << std::endl;
+                    return -1;
+                }
+            }
+        }
+
+        return 0;
     }
 }

@@ -25,15 +25,6 @@
 /mul (\a \b \f n (m f))
 
 /0 (\f \x x)
-/1 (inc 0)
-/2 (inc 1)
-/3 (inc 2)
-/4 (inc 3)
-/5 (inc 4)
-/6 (inc 5)
-/7 (inc 6)
-/8 (inc 7)
-/9 (inc 8)
 
 # ======
 # Tuples
@@ -54,7 +45,7 @@
 # =====
 
 # empty list
-/{} (tup id true)
+/[] (tup id true)
 
 # append element a at front to list b
 /cons (\a \l tup (tup a false) l)
@@ -62,4 +53,4 @@
 # get head and tail from list
 /head (\t first (first l))
 /tail second
-/eq{} second
+/eq[] second

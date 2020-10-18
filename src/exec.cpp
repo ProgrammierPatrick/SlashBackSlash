@@ -7,8 +7,21 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <unordered_set>
 
 using namespace std::string_literals;
+
+List<Binding> simplifyBinding(const List<Binding>& list) {
+    List<Binding> simplified;
+    std::unordered_set<std::string> addedBindings;
+    for(const Binding& b : list) {
+        if(addedBindings.find(*b.name) == addedBindings.end()) {
+            simplified.push_front(b);
+            addedBindings.insert(*b.name);
+        }
+    }
+    return List<Binding>::reverse(simplified);
+}
 
 bool Exec::isDone() {
     return !running;
@@ -45,12 +58,12 @@ void Exec::step(bool skipLibSteps) {
             if(let.value->getBindFromParent) valueList = stack.back()->bindings;
             valueList.append_front(let.value->bindings);
 
-            std::shared_ptr<const AST> valueNode = std::make_shared<AST>(*let.value, valueList);
+            std::shared_ptr<const AST> valueNode = std::make_shared<AST>(*let.value, simplifyBinding(valueList));
 
             nextList.push_front(Binding(let.name, valueNode, stack.back(), false));
             nextList.append_front(let.next->bindings);
             
-            auto nextNode = std::make_shared<AST>(*let.next, nextList);
+            auto nextNode = std::make_shared<AST>(*let.next, simplifyBinding(nextList));
             setNewNode(nextNode);
             done = true;
 
@@ -66,14 +79,36 @@ void Exec::step(bool skipLibSteps) {
         }
         else if (stack.back()->isVar()) {
             bool found = false;
-            for(int i = stack.size() - 1; i >= 0; i--) {
+
+
+            static std::shared_ptr<std::string> str_x = std::make_shared<std::string>("x");
+            static FileLoc loc(std::make_shared<std::string>("_lib_io"), 0, 0, true);
+            static std::shared_ptr<AST> ast_x = std::make_shared<AST>(AST::Var(str_x), loc);
+            static std::shared_ptr<AST> ast_id = std::make_shared<AST>(AST::Abs(str_x, ast_x), loc);
+            if(*stack.back()->getVar().name == "__IO_PUT_BEGIN") {
+                io_put = 0;
+                setNewNode(ast_id);
+                found = true;
+            } else if(*stack.back()->getVar().name == "__IO_PUT_INC") {
+                io_put++;
+                setNewNode(ast_id);
+                found = true;
+            } else if(*stack.back()->getVar().name == "__IO_PUT_DONE") {
+                std::cout << io_put << std::flush;
+                setNewNode(ast_id);
+                found = true;
+            } else if(*stack.back()->getVar().name == "__IO_EOF") {
+                found = true;
+                running = false;
+            }
+
+            for(int i = stack.size() - 1; !found && i >= 0; i--) {
                 auto it = std::find_if(stack[i]->bindings.begin(), stack[i]->bindings.end(), [&](auto b) {
                     return *b.name == *stack.back()->getVar().name;
                 });
                 if(it != stack[i]->bindings.end()) {
                     setNewNode(std::make_shared<AST>(*it->value, false));
                     found = true;
-                    break;
                 }
                 if(!stack[i]->getBindFromParent) break;
             }
@@ -104,13 +139,13 @@ void Exec::step(bool skipLibSteps) {
                 }
                 appSecondBindings.append_front(appSecond->bindings);
 
-                std::shared_ptr<const AST> bindingNode = std::make_shared<AST>(*appSecond, appSecondBindings);
+                std::shared_ptr<const AST> bindingNode = std::make_shared<AST>(*appSecond, simplifyBinding(appSecondBindings));
 
                 absNextBindings.append_front(app.first->bindings);
                 absNextBindings.push_front(Binding(abs.name, bindingNode, stack.back(), true));
                 absNextBindings.append_front(absNext->bindings);
                 
-                auto newNode = std::make_shared<AST>(*absNext, absNextBindings);
+                auto newNode = std::make_shared<AST>(*absNext, simplifyBinding(absNextBindings));
                 setNewNode(newNode);
                 done = true;
             } else {
@@ -165,6 +200,5 @@ std::string printStateImpl(const AST& node, bool showLib, bool showBindValues, b
 }
 
 std::string Exec::printState(bool showLib, bool showBindValues) {
-    // std::string s = printBindings(globalBindings, showLib);
-    return "[" + std::to_string(currentStep) + "] " + printStateImpl(*root, showLib, showBindValues) + "\n" + toString(*root, showLib);
+    return "[" + std::to_string(currentStep) + "] " + printStateImpl(*root, showLib, showBindValues);// + "\n" + toString(*root, showLib);
 }

@@ -1,0 +1,8 @@
+import io.sbs
+
+import const.sbs
+
+# >> (put cH) (>> (put ca) (>> (put cl) (>> (put cl) (put co))))
+
+
+(>> (put cH) (>> (put c!) (>> (put (add 4 c0)) (put cnewline)))) io_start

@@ -24,6 +24,8 @@ private:
 
     bool running = true;
     int currentStep = 0;
+
+    char io_put = '\0';
 };
 
 #endif

@@ -3,6 +3,9 @@
 
 #include <stdexcept>
 #include <memory>
+#include <unordered_set>
+#include <functional>
+#include <iostream>
 
 // immutable persistent list data structure (Haskell-style)
 
@@ -42,10 +45,12 @@ public:
 
     std::shared_ptr<Cons<T>> getCons() const { return cons; }
 
+    // O(1)
     static List<T> push_front(const List<T>& list, const T& val) {
         return List<T>(std::make_shared<Cons<T>>(val, list.cons));
     }
 
+    // O(n)
     static List<T> reverse(const List<T>& list) {
         std::shared_ptr<Cons<T>> result { };
         for(const auto& t : list) {
@@ -54,22 +59,26 @@ public:
         return result;
     }
 
+    // O(1)
     void push_front(const T& val) {
         cons = std::make_shared<Cons<T>>(val, cons);
     }
 
+    // O(2*n), n = |list|
     void append_front(const List<T>& list) {
         auto rev = reverse(list);
         for(const auto& t : rev)
             push_front(t);
     }
 
+    // O(n), n = |this|
     void append_back(const List<T>& list) {
         List<T> l2 = list;
         l2.append_front(*this);
         cons = l2.getCons();
     }
 
+    // O(n), n = |this|
     void push_back(const T& val) {
         append_back(List<T>{val});
     }
@@ -107,6 +116,85 @@ public:
     };
     const_iterator begin() const { return const_iterator(cons.get()); }
     const_iterator end() const { return const_iterator(nullptr); }
+
+    // More complex operations
+
+    template<typename K>
+    static List<T> append_unique(const List<T>& list1, const List<T>& list2, const std::function<K(const T&)>& elementToKey) {
+
+        std::unordered_set<K> elementsFromL1;
+        std::unordered_set<K> elementsFromL2;
+        Cons<T>* l1Cons = list1.cons.get();
+        Cons<T>* l2Cons = list2.cons.get();
+
+        if(!l1Cons) return list2;
+        if(!l2Cons) return list1;
+        
+        K lastKey;
+        bool found = false;
+
+        while(true) {
+            if(!l1Cons && !l2Cons) break;
+
+            if(l1Cons) {
+                K key1 = elementToKey(l1Cons->head);
+
+                if(elementsFromL2.find(key1) != elementsFromL2.end()) {
+                    lastKey = key1;
+                    found = true;
+                    break;
+                } else elementsFromL1.insert(key1);
+            }
+            if(l2Cons) {
+                K key2 = elementToKey(l2Cons->head);
+
+                if(elementsFromL1.find(key2) != elementsFromL1.end()) {
+                    lastKey = key2;
+                    found = true;
+                    break;
+                } else elementsFromL2.insert(key2);
+            }
+
+            if(l1Cons) l1Cons = l1Cons->tail.get();
+            if(l2Cons) l2Cons = l2Cons->tail.get();
+        }
+        
+        // list1 | shared | list2
+
+        List<T> result;
+
+        if(!found) {
+            result = list2;
+            result.append_front(list1);
+        }
+        else {
+            result = List<T>::reverse(list1);
+            for(auto e : list2) {
+                if(elementToKey(e) == lastKey)
+                    break;
+                result.push_front(e);
+            }
+            result = List<T>::reverse(result);
+        }
+
+        
+        // std::cerr << "==================\nAppend list1\n";
+        // for(auto e : list1) {
+        //     std::cerr << elementToKey(e) << " ";
+        // }
+        // std::cerr << "\n To list2:\n";
+        // for(auto e : list2) {
+        //     std::cerr << elementToKey(e) << " ";
+        // }
+        // std::cerr << "\n=== RESULT (found:" << found << "), key:" << lastKey << "\n";
+        // for(auto e : result) {
+        //     std::cerr << elementToKey(e) << " ";
+        // }
+        // std::cerr << "\n=================="<<std::endl;
+        
+
+        return result;
+    }
 
 private:
     std::shared_ptr<Cons<T>> cons;

@@ -1,0 +1,32 @@
+import io.sbs
+
+import const.sbs
+
+(>> (put cH) (
+ >> (put c!) (
+ >> (put (add 4 c0))
+ >> (put cnewline)
+ >> (put cx) (
+ >> (put cy) (
+ >> (put cz) (
+ >> (put cA) (
+ >> (put cB) (
+ >> (put cC) (
+ >> (put cspace) (
+ >> (put cD) (
+ >> (put ca) (
+ >> (put cs) (
+ >> (put cspace) (
+ >> (put ci) (
+ >> (put cs) (
+ >> (put ct) (
+ >> (put cspace) (
+ >> (put ce) (
+ >> (put ci) (
+ >> (put cn) (
+ >> (put cspace) (
+ >> (put cT) (
+ >> (put ce) (
+ >> (put cs) (
+ >> (put ct) (put cnewline)
+))))))))))))))))))))))))) io_start

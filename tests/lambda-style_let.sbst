@@ -1,0 +1,8 @@
+test_case /Q (\q q q) Q
+
+/Q (\q q q)
+/P (\p p p p p p)
+
+(\x (
+	(\a \b \c a b c) (\x x) (\x x) Q)
+) P

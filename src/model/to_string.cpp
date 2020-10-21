@@ -51,3 +51,7 @@ std::string toString(const Token& token) {
     else if(token.isEnd()) return "#";
     return "{UNKNOWN_TOKEN_TYPE} ";
 }
+
+std::string toString(const Binding& binding) {
+    return "B[" + *binding.name + (binding.fromBeta ? "*" : "") +"]";
+}

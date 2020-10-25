@@ -111,17 +111,17 @@ struct Lexer {
                     testResult = str;
 
                 } else {
-                    tokens.push_front(Token::makeVar(std::make_shared<std::string>(value), FileLoc(filenamePtr, var_line, var_pos, fromLib)));
+                    tokens.push_back(Token::makeVar(std::make_shared<std::string>(value), FileLoc(filenamePtr, var_line, var_pos, fromLib)));
                 }
 
             }
             else {
                 FileLoc loc(filenamePtr, line, pos, fromLib);
 
-                if (c == '(')       tokens.push_front(Token::makeLPar(loc));
-                else if (c == ')')  tokens.push_front(Token::makeRPar(loc));
-                else if (c == '/')  tokens.push_front(Token::makeSlash(loc));
-                else if (c == '\\') tokens.push_front(Token::makeBSlash(loc));
+                if (c == '(')       tokens.push_back(Token::makeLPar(loc));
+                else if (c == ')')  tokens.push_back(Token::makeRPar(loc));
+                else if (c == '/')  tokens.push_back(Token::makeSlash(loc));
+                else if (c == '\\') tokens.push_back(Token::makeBSlash(loc));
 
                 nextChar();
             }
@@ -137,7 +137,6 @@ struct Lexer {
             return (originPath.parent_path() / name).string();
         
         #if defined(_WIN32) || defined(_WIN64)
-        // TODO: completely untested code, check this in windows
         HMODULE hModule = GetModuleHandle(NULL);
         if(hModule) {
             char ownPath[MAX_PATH];
@@ -172,9 +171,9 @@ List<Token> runLexer(const std::string& filename) {
 
     if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
 
-    lexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), lexer.tokens.back().loc.line + 1, 0, false)));
+    lexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), lexer.tokens.back().loc.line + 1, 0, false)));
 
-    return List<Token>::reverse(lexer.tokens);
+    return lexer.tokens;
 }
 
 void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, List<Token>& testTokens, bool& expectError) {
@@ -184,8 +183,8 @@ void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, Li
 
     if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
 
-    lexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename),lexer.tokens.back().loc.line + 1, 0, false)));
-    fileTokens = List<Token>::reverse(lexer.tokens);
+    lexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename),lexer.tokens.back().loc.line + 1, 0, false)));
+    fileTokens = lexer.tokens;
 
     if(lexer.testResult == "") {
         throw SBSException(SBSException::Origin::LEXER, "program called in test mode, but file is missing test_case directive.", FileLoc(std::make_shared<std::string>(filename), 0, 0, false));
@@ -202,8 +201,8 @@ void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, Li
 
         if(resultLexer.tokens.size() == 0) throw std::runtime_error("runLexer(): expeted expression in file " + filename + " is empty.");
 
-        resultLexer.tokens.push_front(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), resultLexer.tokens.back().loc.line + 1, 0, false)));
-        testTokens = List<Token>::reverse(resultLexer.tokens);
+        resultLexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), resultLexer.tokens.back().loc.line + 1, 0, false)));
+        testTokens = resultLexer.tokens;
 
     }
 }

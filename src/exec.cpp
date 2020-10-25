@@ -16,11 +16,11 @@ List<Binding> simplifyBinding(const List<Binding>& list) {
     std::unordered_set<std::string> addedBindings;
     for(const Binding& b : list) {
         if(addedBindings.find(*b.name) == addedBindings.end()) {
-            simplified.push_front(b);
+            simplified.push_back(b);
             addedBindings.insert(*b.name);
         }
     }
-    return List<Binding>::reverse(simplified);
+    return simplified;
 }
 
 bool Exec::isDone() {

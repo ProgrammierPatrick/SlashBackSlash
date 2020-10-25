@@ -1,56 +1,36 @@
 #include <iostream>
 #include <string>
 
-#include "CLI11.hpp"
 
 #include "lexer.h"
 #include "parser.h"
 #include "exec.h"
 #include "sbsexception.h"
+#include "cli.h"
 #include "model/list.h"
 #include "model/to_string.h"
 
 int main(int argc, char **argv) {
-    CLI::App app{"SlashBackSlash"};
+    Cli cli;
+    int ret = cli.parse(argc, argv);
+    if(ret != 0) return ret;
 
-    bool printLexer = false;
-    app.add_flag("-l,--print-lexer", printLexer, "print tokens after lexing");
-    bool printAST = false;
-    app.add_flag("-a,--print-ast", printAST, "print AST after parsing");
-
-    bool trace = false;
-    app.add_flag("-t,--trace", trace, "print complete state after each instruction");
-
-    bool showBindValues = false;
-    app.add_flag("-v,--print-bind-values", showBindValues, "print values of bound variables in trace output");
-
-    bool showLib = false;
-    app.add_flag("-L,--show-lib", showLib, "include actions from lib/ in all outputs");
-
-    bool test = false;
-    app.add_flag("-T,--test", test, "run file as .sbst test case");
-
-    std::string filename;
-    app.add_option("filename", filename, "the file to execute")->required();
-
-    CLI11_PARSE(app, argc, argv);
-
-    if(test) {
+    if(cli.test) {
         List<Token> tokens;
         List<Token> expectedTokens;
         bool expectError;
-        runLexerForTesting(filename, tokens, expectedTokens, expectError);
+        runLexerForTesting(cli.filename, tokens, expectedTokens, expectError);
 
-        if(printLexer) {
+        if(cli.printLexer) {
             if(!expectError){
                 std::cerr << "expected: ";
                 for(auto t : expectedTokens)
-                    if(showLib || !t.loc.fromLib)
+                    if(cli.showLib || !t.loc.fromLib)
                         std::cerr << toString(t);
                 std::cerr << std::endl;
             }
             for(auto t : tokens)
-                if(showLib || !t.loc.fromLib)
+                if(cli.showLib || !t.loc.fromLib)
                     std::cerr << toString(t);
             std::cerr << std::endl;
         }
@@ -64,7 +44,7 @@ int main(int argc, char **argv) {
             } catch(SBSException& e) { }
 
             if(!receivedException) {
-                std::cerr << "Test failed: no error in '" << filename << "'." << std::endl;
+                std::cerr << "Test failed: no error in '" << cli.filename << "'." << std::endl;
                 return -1;
             } else return 0;
         } else {
@@ -78,7 +58,7 @@ int main(int argc, char **argv) {
                 std::string resultState = exec.printState(false);
 
                 if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
-                    std::cerr << "Test failed: result of '" << filename << "' does not match expected result." << std::endl
+                    std::cerr << "Test failed: result of '" << cli.filename << "' does not match expected result." << std::endl
                         << "expected: " << expectedState << std::endl
                         << "result: " << resultState << std::endl;
                     return -1;
@@ -97,15 +77,15 @@ int main(int argc, char **argv) {
     else {
         List<Token> tokens;
         try {
-            tokens = runLexer(filename);
+            tokens = runLexer(cli.filename);
         } catch(std::exception& e) {
-            std::cerr << "Exception in runLexer(" << filename << "): " << e.what() << std::endl;
+            std::cerr << "Exception in runLexer(" << cli.filename << "): " << e.what() << std::endl;
             return -1;
         }
 
-        if(printLexer) {
+        if(cli.printLexer) {
             for(auto t : tokens)
-                if(showLib || !t.loc.fromLib)
+                if(cli.showLib || !t.loc.fromLib)
                     std::cerr << toString(t);
             std::cerr << std::endl;
         }
@@ -118,14 +98,14 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        if(printAST)
-            std::cerr << toString(*ast, showLib) << std::endl;
+        if(cli.printAST)
+            std::cerr << toString(*ast, cli.showLib) << std::endl;
 
         Exec exec(ast);
             
-        if(trace) {
+        if(cli.trace) {
             try {
-                std::cerr << exec.printState(showLib, showBindValues) << std::endl;
+                std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
             } catch(std::exception& e) {
                 std::cerr << "Exception in Exec::printState(): " << e.what() << std::endl;
                 return -1;
@@ -135,15 +115,15 @@ int main(int argc, char **argv) {
         while(!exec.isDone()) {
 
             try {
-                exec.step(!showLib);
+                exec.step(!cli.showLib);
             } catch(std::exception& e) {
                 std::cerr << "Exception in Exec::step(): " << e.what() << std::endl;
                 return -1;
             }
 
-            if(trace && !exec.isDone()) {
+            if(cli.trace && !exec.isDone()) {
                 try {
-                    std::cerr << exec.printState(showLib, showBindValues) << std::endl;
+                    std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
                 } catch(std::exception& e) {
                     std::cerr << "Exception in Exec::printState(): " << e.what() << std::endl;
                     return -1;

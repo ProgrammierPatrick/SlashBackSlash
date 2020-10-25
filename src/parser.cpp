@@ -38,7 +38,6 @@ void parseError(const Token& token, const std::string& symbol, const std::string
     throw SBSException(SBSException::Origin::PARSER, "Got Token " + toString(token) + " in " + symbol + ", but expected one of " + expected + ".", token.loc);
 }
 
-
 std::shared_ptr<AST> parseVal(const List<Token>& tokens, int& i);
 std::shared_ptr<AST> parseExpr(const List<Token>& tokens, int& i);
 std::shared_ptr<AST> parseLet(const List<Token>& tokens, int& i);

@@ -8,5 +8,6 @@
 
 std::string toString(const Token& token);
 std::string toString(const AST& ast, bool showLib);
+std::string toString(const Binding& binding);
 
 #endif

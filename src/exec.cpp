@@ -7,20 +7,30 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <map>
 #include <unordered_set>
 
 using namespace std::string_literals;
 
 List<Binding> simplifyBinding(const List<Binding>& list) {
-    List<Binding> simplified;
     std::unordered_set<std::string> addedBindings;
-    for(const Binding& b : list) {
+    List<Binding> bindings;
+    int numRemoved = 0;
+    int size = 0;
+    for(auto b : list) {
         if(addedBindings.find(*b.name) == addedBindings.end()) {
-            simplified.push_back(b);
+            bindings.push_back(b);
             addedBindings.insert(*b.name);
-        }
+        } else numRemoved++;
+        size++;
     }
-    return simplified;
+    std::cerr << "simplify: " << numRemoved << "/" << size << " removed." << std::endl;
+    if(true || numRemoved == size) {
+        for(auto b : list)
+            std::cerr << toString(b) << " ";
+        std::cerr << std::endl;
+    }
+    return bindings;
 }
 
 bool Exec::isDone() {
@@ -47,23 +57,21 @@ void Exec::step(bool skipLibSteps) {
     };
 
     bool done = false;
-
     while (!done) {
-
         if (stack.back()->isLet()) {
             auto& let = stack.back()->getLet();
 
             List<Binding> nextList, valueList;
             if(let.next->getBindFromParent) nextList = stack.back()->bindings;
             if(let.value->getBindFromParent) valueList = stack.back()->bindings;
-            valueList.append_front(let.value->bindings);
+            valueList = List<Binding>::append_unique(let.value->bindings, valueList);
 
-            std::shared_ptr<const AST> valueNode = std::make_shared<AST>(*let.value, simplifyBinding(valueList));
+            std::shared_ptr<const AST> valueNode = std::make_shared<AST>(*let.value, valueList);
 
             nextList.push_front(Binding(let.name, valueNode, stack.back(), false));
-            nextList.append_front(let.next->bindings);
+            nextList = List<Binding>::append_unique(let.next->bindings, nextList);
             
-            auto nextNode = std::make_shared<AST>(*let.next, simplifyBinding(nextList));
+            auto nextNode = std::make_shared<AST>(*let.next, nextList);
             setNewNode(nextNode);
             done = true;
 
@@ -129,23 +137,27 @@ void Exec::step(bool skipLibSteps) {
                 auto& appSecond = app.second;
 
                 // add current bindings to both abstract implementation and appication second
+                size_t lowestStackIdx = stack.size() - 1;
+                while(lowestStackIdx > 0 && stack[lowestStackIdx]->getBindFromParent)
+                    lowestStackIdx--;
+
                 List<Binding> appSecondBindings, absNextBindings;
-                for(int i = stack.size() - 1; i >= 0; i--) {
+                for(size_t i = lowestStackIdx; i < stack.size(); i++) {
                     if(app.first->getBindFromParent)
-                        absNextBindings.append_back(stack[i]->bindings);
+                        absNextBindings = List<Binding>::append_unique(stack[i]->bindings, absNextBindings);
                     if(app.second->getBindFromParent)
-                        appSecondBindings.append_back(stack[i]->bindings);
-                    if(!stack[i]->getBindFromParent) break;
+                        appSecondBindings = List<Binding>::append_unique(stack[i]->bindings, appSecondBindings);
                 }
-                appSecondBindings.append_front(appSecond->bindings);
 
-                std::shared_ptr<const AST> bindingNode = std::make_shared<AST>(*appSecond, simplifyBinding(appSecondBindings));
+                appSecondBindings = List<Binding>::append_unique(appSecond->bindings, appSecondBindings);
 
-                absNextBindings.append_front(app.first->bindings);
+                std::shared_ptr<const AST> bindingNode = std::make_shared<AST>(*appSecond, appSecondBindings);
+
+                absNextBindings = List<Binding>::append_unique(app.first->bindings, absNextBindings);
                 absNextBindings.push_front(Binding(abs.name, bindingNode, stack.back(), true));
-                absNextBindings.append_front(absNext->bindings);
+                absNextBindings = List<Binding>::append_unique(absNext->bindings, absNextBindings);
                 
-                auto newNode = std::make_shared<AST>(*absNext, simplifyBinding(absNextBindings));
+                auto newNode = std::make_shared<AST>(*absNext, absNextBindings);
                 setNewNode(newNode);
                 done = true;
             } else {

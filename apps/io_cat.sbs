@@ -1,0 +1,11 @@
+import lang.sbs
+import io.sbs
+
+/get_put (>>= get (\c put c))
+
+Y (\f
+    >>= get (\c
+        (is0 c) io_start (>> (put c) f)
+        # (>> (put c) f)
+    )
+)

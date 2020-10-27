@@ -1,7 +1,11 @@
 # LANG SBS
 # MAIN LIBRARY
 
+# ================
+# Common functions
+# ================
 /id (\x x)
+/Y (\f (\x f (x x)) (\x f (x x)))
 
 # =====
 # Logic
@@ -21,8 +25,8 @@
 /inc (\n \f \x f (n f x))
 
 /add (\a \b a inc b)
-/sub (\a \b b dec a)
 /mul (\a \b \f n (m f))
+/is0 (\n n (\x false) true)
 
 /0 (\f \x x)
 
@@ -54,3 +58,6 @@
 /head (\t first (first l))
 /tail second
 /eq[] second
+
+# =========
+# Common Func

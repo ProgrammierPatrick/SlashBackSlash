@@ -90,8 +90,12 @@ void Exec::step(bool skipLibSteps) {
 
 
             static std::shared_ptr<std::string> str_x = std::make_shared<std::string>("x");
+            static std::shared_ptr<std::string> str_f = std::make_shared<std::string>("f");
+            static std::shared_ptr<std::string> str_s = std::make_shared<std::string>("s");
             static FileLoc loc(std::make_shared<std::string>("_lib_io"), 0, 0, true);
             static std::shared_ptr<AST> ast_x = std::make_shared<AST>(AST::Var(str_x), loc);
+            static std::shared_ptr<AST> ast_f = std::make_shared<AST>(AST::Var(str_f), loc);
+            static std::shared_ptr<AST> ast_s = std::make_shared<AST>(AST::Var(str_s), loc);
             static std::shared_ptr<AST> ast_id = std::make_shared<AST>(AST::Abs(str_x, ast_x), loc);
             if(*stack.back()->getVar().name == "__IO_PUT_BEGIN") {
                 io_put = 0;
@@ -108,6 +112,20 @@ void Exec::step(bool skipLibSteps) {
             } else if(*stack.back()->getVar().name == "__IO_EOF") {
                 found = true;
                 running = false;
+            } else if(*stack.back()->getVar().name == "__IO_GET") {
+                char c;
+                std::cin.get(c);
+                // cn = \f \z f (f (f z))
+                auto cn = ast_x;
+                for(int i = 0; i < c; i++)
+                    cn = std::make_shared<AST>(AST::App(ast_f, cn), loc);
+                cn = std::make_shared<AST>(AST::Abs(str_x, cn), loc);
+                cn = std::make_shared<AST>(AST::Abs(str_f, cn), loc);
+                // (\s s cn)
+                auto ast = std::make_shared<AST>(AST::App(ast_s, cn), loc);
+                ast = std::make_shared<AST>(AST::Abs(str_s, ast), loc);
+                setNewNode(ast);
+                found = true;
             }
 
             for(int i = stack.size() - 1; !found && i >= 0; i--) {

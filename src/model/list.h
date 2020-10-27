@@ -152,7 +152,6 @@ public:
         // DISBALE THIS FUNCTION, this function is bad for speed
         return append(list1, list2);
 
-        
         const int maxDepth = 16;
         int currentDepth = 0;
 

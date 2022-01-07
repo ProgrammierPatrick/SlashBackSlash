@@ -25,7 +25,7 @@
 /inc (\n \f \x f (n f x))
 
 /add (\a \b a inc b)
-/mul (\a \b \f n (m f))
+/mul (\a \b \f a (b f))
 /is0 (\n n (\x false) true)
 
 /0 (\f \x x)

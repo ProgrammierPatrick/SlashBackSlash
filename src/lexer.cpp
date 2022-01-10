@@ -146,6 +146,11 @@ struct Lexer {
                 outFromLib = true;
                 return (exePath.parent_path() / "lib" / name).string();
             }
+            if(std::filesystem::exists(exePath.parent_path().parent_path() / "lib" / name)) {
+                // in MSVC, the sbs.exe can be placed inside Debug/ folder in build-dir. So relative path to lib is ../lib/
+                outFromLib = true;
+                return (exePath.parent_path().parent_path() / "lib" / name).string();
+            }
         }
         #endif
         #ifdef __unix__

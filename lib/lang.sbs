@@ -59,5 +59,11 @@
 /tail second
 /eq[] second
 
-# =========
-# Common Func
+# ======================================
+# Numbers: subtraction (requires tuples)
+/dec (\n n
+    (\p tup (inc (p first)) (p first))
+    (tup 0 0)
+    second
+)
+/sub (\a \b b dec a)

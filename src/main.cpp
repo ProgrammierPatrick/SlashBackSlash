@@ -39,7 +39,10 @@ int main(int argc, char **argv) {
             bool receivedException = true;
             try {
                 Exec exec(parse(tokens));
-                while(!exec.isDone()) exec.step(false);
+                while(!exec.isDone()) {
+                    exec.step(false);
+                    if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
+                }
                 receivedException = false;
             } catch(SBSException& e) { }
 
@@ -54,7 +57,10 @@ int main(int argc, char **argv) {
                 std::string expectedState = expectedExec.printState(false);
 
                 Exec exec(parse(tokens));
-                while(!exec.isDone()) exec.step(false);
+                while(!exec.isDone()) {
+                    exec.step(false);
+                    if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
+                }
                 std::string resultState = exec.printState(false);
 
                 if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
@@ -63,11 +69,10 @@ int main(int argc, char **argv) {
                         << "result: " << resultState << std::endl;
                     return -1;
                 }
-
-
+                
                 return 0;
             }
-            catch(SBSException& e) {
+            catch(std::exception& e) {
                 std::cerr << "Test failed: " << e.what() << std::endl;
                 return -1;
             }

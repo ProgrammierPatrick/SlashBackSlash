@@ -77,3 +77,59 @@ bool alphaEquivImpl(const AST& a, const AST& b, std::vector<std::string> abstrac
 bool AST::alphaEquiv(const AST& a, const AST& b) {
     return alphaEquivImpl(a, b, {}, {});
 }
+
+std::vector<std::shared_ptr<const std::string>> ASTGetUnboundVars(const AST& ast, const std::vector<std::string>& boundVars) {
+    if (ast.isAbs()) {
+        auto bound { boundVars };
+        bound.push_back(*ast.getAbs().name);
+        return ASTGetUnboundVars(*ast.getAbs().ast, bound);
+    }
+    if (ast.isApp()) {
+        auto ret = ASTGetUnboundVars(*ast.getApp().first, boundVars);
+        for (auto& var : ASTGetUnboundVars(*ast.getApp().second, boundVars))
+            if (std::find(ret.begin(), ret.end(), var) == ret.end())
+                ret.push_back(var);
+        return ret;
+    }
+    if (ast.isLet()) {
+        auto bound { boundVars };
+        bound.push_back(*ast.getAbs().name);
+        auto ret = ASTGetUnboundVars(*ast.getLet().value, boundVars);
+        for (auto& var : ASTGetUnboundVars(*ast.getLet().next, bound))
+            if (std::find(ret.begin(), ret.end(), var) == ret.end())
+                ret.push_back(var);
+        return ret;
+    }
+    if (ast.isVar()) {
+        if (std::find(boundVars.begin(), boundVars.end(), *ast.getVar().name) == boundVars.end())
+            return { ast.getVar().name };
+        else return { };
+    }
+}
+
+std::vector<std::shared_ptr<const std::string>> AST::getUnboundVars() const {
+    return ASTGetUnboundVars(*this, { });
+}
+
+bool ASTisPure(const AST& ast, const std::vector<std::string>& boundVars) {
+    if (ast.isAbs()) {
+        auto bound { boundVars };
+        bound.push_back(*ast.getAbs().name);
+        return ASTisPure(*ast.getAbs().ast, bound);
+    }
+    if (ast.isApp()) {
+        return ASTisPure(*ast.getApp().first, boundVars) && ASTisPure(*ast.getApp().second, boundVars);
+    }
+    if (ast.isLet()) {
+        auto bound { boundVars };
+        bound.push_back(*ast.getAbs().name);
+        return ASTisPure(*ast.getLet().value, boundVars) && ASTisPure(*ast.getLet().next, bound);
+    }
+    if (ast.isVar()) {
+        return std::find(boundVars.begin(), boundVars.end(), *ast.getVar().name) != boundVars.end();
+    }
+}
+
+bool AST::isPure() const {
+    return ASTisPure(*this, { });
+}

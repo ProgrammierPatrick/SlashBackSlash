@@ -5,6 +5,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "exec.h"
+#include "compiler_il.h"
 #include "sbsexception.h"
 #include "cli.h"
 #include "model/list.h"
@@ -105,6 +106,17 @@ int main(int argc, char **argv) {
 
         if(cli.printAST)
             std::cerr << toString(*ast, cli.showLib) << std::endl;
+
+        IL il;
+        if (cli.compile || cli.printIL) {
+            try {
+                il = compileToIL(ast);
+            } catch (std::exception& e) {
+                std::cerr << "Exception in compileToIL(ast): " << e.what() << std::endl;
+            }
+        }
+        if (cli.printIL)
+            std::cerr << il << std::endl;
 
         Exec exec(ast);
             

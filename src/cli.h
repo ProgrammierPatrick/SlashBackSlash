@@ -6,8 +6,10 @@
 struct Cli {
     bool printLexer = false;
     bool printAST = false;
+    bool printIL = false;
     bool trace = false;
     bool showBindValues = false;
+    bool compile = false;
     bool showLib = false;
     bool test = false;
     std::string filename;

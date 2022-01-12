@@ -12,7 +12,8 @@ public:
     enum class Origin {
         LEXER,
         PARSER,
-        RUNTIME
+        RUNTIME,
+        IL_COMPILER
     };
 
     SBSException(Origin origin, const std::string& msg, const FileLoc& loc)
@@ -21,6 +22,7 @@ public:
             if(origin == Origin::LEXER) errorName = "LexerError";
             if(origin == Origin::PARSER) errorName = "ParserError";
             if(origin == Origin::RUNTIME) errorName = "RuntimeError";
+            if(origin == Origin::IL_COMPILER) errorName = "ILCompilerError";
 
             fullMessage = *loc.filename + ":" + std::to_string(loc.line) + ":" + std::to_string(loc.pos) + " " + errorName + ": " + msg;
         }

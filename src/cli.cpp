@@ -7,7 +7,9 @@ int Cli::parse(int argc, char** argv) {
 
     app.add_flag("-l,--print-lexer", printLexer, "print tokens after lexing");
     app.add_flag("-a,--print-ast", printAST, "print AST after parsing");
+    app.add_flag("-i,--print-il", printIL, "print IL assembly after compiling");
 
+    app.add_flag("-c,--compile", compile, "compile to IL file for native (fast) execution");
     app.add_flag("-t,--trace", trace, "print complete state after each instruction");
 
     app.add_flag("-v,--print-bind-values", showBindValues, "print values of bound variables in trace output");

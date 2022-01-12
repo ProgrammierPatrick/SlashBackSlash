@@ -46,6 +46,9 @@ struct AST {
 
     static bool alphaEquiv(const AST& a, const AST& b);
 
+    bool isPure() const;
+    std::vector<std::shared_ptr<const std::string>> getUnboundVars() const;
+
     bool isVar() const { return std::holds_alternative<Var>(data); }
     bool isLet() const { return std::holds_alternative<Let>(data); }
     bool isApp() const { return std::holds_alternative<App>(data); }

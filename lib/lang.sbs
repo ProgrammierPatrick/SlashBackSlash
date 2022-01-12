@@ -55,7 +55,7 @@
 /cons (\a \l tup (tup a false) l)
 
 # get head and tail from list
-/head (\t first (first l))
+/head (\l first (first l))
 /tail second
 /eq[] second
 

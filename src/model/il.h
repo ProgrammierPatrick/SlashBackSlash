@@ -37,7 +37,8 @@ struct IL {
 
         std::string name;
         std::vector<std::variant<JMPVar,JMP,PUSHVar,PUSH,PUSH_ALLOC,POP>> sectionData;
-        Section(const std::string& name) : name(name) { }
+        bool isBuildIn = false;
+        Section(const std::string& name, bool isBuildIn = false) : name(name), isBuildIn(isBuildIn) { }
     };
 
     std::vector<std::shared_ptr<Section>> sections;

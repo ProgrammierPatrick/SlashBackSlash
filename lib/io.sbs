@@ -4,16 +4,15 @@ import lang.sbs
 # /__IO_GET (\s s CCC)
 # /__IO_PUT (\s\a s)
 
-
-/get (\s __IO_GET s)
-/put (\c \s __IO_PUT s c)
-/io_start __IO_EOF
-
 # /return (\a\s __IO_VAL s a)
 />> (\a \b a b)
 />>= (\a \b a b)
 
 /__IO_PUT (\s\a (>> __IO_PUT_BEGIN (a (\x >> __IO_PUT_INC x) __IO_PUT_DONE)) s)
+
+/get (\s __IO_GET s)
+/put (\c \s __IO_PUT s c)
+/io_start __IO_EOF
 
 # usage : 
 # >>= get (\c >> (put c) (put c)) io_start

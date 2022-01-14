@@ -16,6 +16,8 @@ int Cli::parse(int argc, char** argv) {
 
     app.add_flag("-L,--show-lib", showLib, "include actions from lib/ in all outputs");
 
+    app.add_flag("-V,--verbose", verbose, "show processing steps");
+
     app.add_flag("-T,--test", test, "run file as .sbst test case");
 
     app.add_option("filename", filename, "the file to execute")->required();

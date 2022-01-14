@@ -4,7 +4,7 @@
 
 #include <unordered_set>
 
-//#define TRACE_COMPILER
+// #define TRACE_COMPILER
 
 #ifdef TRACE_COMPILER
 #include <iostream>
@@ -40,16 +40,25 @@ struct Bind {
     Bind(const string& name, variant<Lambda, Let> data) : name(name), data(data) { }
 };
 
+// src: https://en.cppreference.com/w/cpp/utility/variant/visit
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-vector<shared_ptr<Section>> parseSectionNew(const string& name, shared_ptr<const AST> ast, vector<Bind> bindings);
+vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AST> ast, vector<Bind> bindings);
+vector<shared_ptr<Section>> getBuildinSections();
 IL removeUnusedSections(const IL& il);
 
 IL compileToIL(const shared_ptr<AST>& ast) {
     IL il;
 
-    il.sections = parseSectionNew("main", ast, {});
+    il.sections = getBuildinSections();
+    vector<Bind> buildinBinds;
+    for (auto& s : il.sections)
+        buildinBinds.push_back(Bind(s->name, Let(s)));
+
+    auto nonBuildinSections = parseSection("main", ast, buildinBinds);
+    il.sections.insert(il.sections.end(), nonBuildinSections.begin(), nonBuildinSections.end());
+
     il.mainSection = il.sections.back();
 
     il = removeUnusedSections(il);
@@ -81,9 +90,17 @@ IL removeUnusedSections(const IL& il) {
     return result;
 }
 
+vector<shared_ptr<Section>> getBuildinSections() {
+    vector<shared_ptr<Section>> sections;
+    sections.push_back(std::make_shared<Section>("__IO_PUT_BEGIN", true));
+    sections.push_back(std::make_shared<Section>("__IO_PUT_INC", true));
+    sections.push_back(std::make_shared<Section>("__IO_PUT_DONE", true));
+    sections.push_back(std::make_shared<Section>("__IO_EOF", true));
+    sections.push_back(std::make_shared<Section>("__IO_GET", true));
+    return sections;
+}
 
-
-vector<shared_ptr<Section>> parseSectionNew(const string& name, shared_ptr<const AST> ast, vector<Bind> bindings) {
+vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AST> ast, vector<Bind> bindings) {
     TRACE_INC_INDENT
     TRACE("section " << name)
     shared_ptr<Section> section = std::make_shared<Section>(name);
@@ -138,7 +155,7 @@ vector<shared_ptr<Section>> parseSectionNew(const string& name, shared_ptr<const
                         // APP with pure lambda: create new section {name}_pure_{i} and PUSH it
                         string newName = name + "_l" + std::to_string(nextPureSubsection++);
                         TRACE("APP _ " << newName)
-                        auto newSections = parseSectionNew(newName, app.second, bindings);
+                        auto newSections = parseSection(newName, app.second, bindings);
                         TRACE("back in section " << name)
                         createdSections.insert(createdSections.end(), newSections.begin(), newSections.end());
 
@@ -163,7 +180,7 @@ vector<shared_ptr<Section>> parseSectionNew(const string& name, shared_ptr<const
                         }
                         string newName = name + "_c" + std::to_string(nextClosureSubsection++);
                         TRACE("APP _ " << newName)
-                        auto newSections = parseSectionNew(newName, liftedAST, bindings);
+                        auto newSections = parseSection(newName, liftedAST, bindings);
                         TRACE("back in section " << name)
                         createdSections.insert(createdSections.end(), newSections.begin(), newSections.end());
 
@@ -174,7 +191,7 @@ vector<shared_ptr<Section>> parseSectionNew(const string& name, shared_ptr<const
                 ast = app.first;
             }, [&](const AST::Let& let) {
                 TRACE("LET " << *let.name)
-                auto newSections = parseSectionNew(*let.name, let.value, bindings);
+                auto newSections = parseSection(*let.name, let.value, bindings);
                 TRACE("back in section " << name)
                 createdSections.insert(createdSections.end(), newSections.begin(), newSections.end());
                 bindings.push_back(Bind(*let.name, Let(newSections.back())));

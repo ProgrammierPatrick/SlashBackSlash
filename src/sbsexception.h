@@ -13,7 +13,8 @@ public:
         LEXER,
         PARSER,
         RUNTIME,
-        IL_COMPILER
+        IL_COMPILER,
+        C_COMPILER
     };
 
     SBSException(Origin origin, const std::string& msg, const FileLoc& loc)
@@ -23,6 +24,7 @@ public:
             if(origin == Origin::PARSER) errorName = "ParserError";
             if(origin == Origin::RUNTIME) errorName = "RuntimeError";
             if(origin == Origin::IL_COMPILER) errorName = "ILCompilerError";
+            if(origin == Origin::C_COMPILER) errorName = "CCompilerError";
 
             fullMessage = *loc.filename + ":" + std::to_string(loc.line) + ":" + std::to_string(loc.pos) + " " + errorName + ": " + msg;
         }

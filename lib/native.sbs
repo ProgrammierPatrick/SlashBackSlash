@@ -1,0 +1,33 @@
+/true (\t \f t)
+/false (\t \f f)
+
+/T true
+/F false
+
+/8-tuple (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 \f f x0 x1 x2 x3 x4 x5 x6 x7)
+/_0 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x0)
+/_1 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x1)
+/_2 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x2)
+/_3 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x3)
+/_4 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x4)
+/_5 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x5)
+/_6 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x6)
+/_7 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x7)
+
+/nil (\f \x x)
+/. (\h \t \f \x f h (t f x))
+
+#examples
+/<null>  (8-tuple F F F F F F F F)
+/<bel>   (8-tuple F F F F F T T T)
+
+/cH      (8-tuple F T F F T F F F)
+/ce      (8-tuple F T T F F T F T)
+/cl      (8-tuple F T T F T T F F)
+/co      (8-tuple F T T F T T T T)
+/<space> (8-tuple F F T F F F F F)
+/cW      (8-tuple F T F T F T T T)
+/cr      (8-tuple F T T T F F T F)
+/cd      (8-tuple F T T F F T F F)
+/c!      (8-tuple F F T F F F F T)
+/Hello_World (. cH (. ce (. cl (. c1 (. co (. <space> (. cW (. co (. cr (. cl (. cd (. c! nil))))))))))))

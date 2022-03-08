@@ -6,6 +6,8 @@
 # ================
 /id (\x x)
 /Y (\f (\x f (x x)) (\x f (x x)))
+# wildcard
+/_ id
 
 # =====
 # Logic
@@ -23,7 +25,7 @@
 # Numbers
 # =======
 /inc (\n \f \x f (n f x))
-# allias
+# allias n + m
 /+ inc
 
 /add (\a \b a inc b)
@@ -36,32 +38,38 @@
 # Tuples
 # ======
 /tup (\a \b \f f a b)
-/first true
-/second false
+/first (\t t true)
+/second (\t t false)
 
 # make tuple of 1, 2:
 # /t (tup 1 2)
 # get first element
-# /f (t first)
+# /f (first t)
 # get second element
-# /s (t second)
+# /s (second t)
 
 # =====
 # Lists
 # =====
 
 # empty list
-/[] (tup id true)
+/[] (\f \x x)
 
 # append element a at front to list b
-/cons (\a \l tup (tup a false) l)
-# allias
-/. cons
+/cons (\h \t \f \x f h (t f x))
+# allias l1 . l2
+/. cons (\h \t \f \x f h (t f x))
 
 # get head and tail from list
-/head (\l first (first l))
-/tail second
-/eq[] second
+/head (\l l true _)
+/tail (\l second
+    (
+        l
+        (\h \p tup (cons h (first p)) (first p))
+        (tup [] [])
+    )
+)
+/is[] (\l l (\h \t false) true)
 
 /[ (\x \f f x)
 /, (\y \x \f . y (f x))
@@ -69,9 +77,11 @@
 
 # ======================================
 # Numbers: subtraction (requires tuples)
-/dec (\n n
-    (\p tup (inc (p first)) (p first))
-    (tup 0 0)
-    second
+/dec (\n second
+    (
+        n
+        (\p tup (inc (p first)) (p first))
+        (tup 0 0)
+    )
 )
 /sub (\a \b b dec a)

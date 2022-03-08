@@ -1,6 +1,6 @@
-/true (\t \f t)
-/false (\t \f f)
+import lang.sbs
 
+#less text
 /T true
 /F false
 
@@ -13,9 +13,6 @@
 /_5 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x5)
 /_6 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x6)
 /_7 (\x0 \x1 \x2 \x3 \x4 \x5 \x6 \x7 x7)
-
-/nil (\f \x x)
-/. (\h \t \f \x f h (t f x))
 
 #examples
 /<null>  (8-tuple F F F F F F F F)
@@ -30,4 +27,4 @@
 /cr      (8-tuple F T T T F F T F)
 /cd      (8-tuple F T T F F T F F)
 /c!      (8-tuple F F T F F F F T)
-/Hello_World (. cH (. ce (. cl (. c1 (. co (. <space> (. cW (. co (. cr (. cl (. cd (. c! nil))))))))))))
+/Hello_World ([ cH , ce . cl . c1 . co . <space> . cW . co . cr . cl . cd . c! ])

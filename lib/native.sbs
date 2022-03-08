@@ -27,4 +27,4 @@ import lang.sbs
 /cr      (8-tuple F T T T F F T F)
 /cd      (8-tuple F T T F F T F F)
 /c!      (8-tuple F F T F F F F T)
-/Hello_World ([ cH , ce , cl , c1 , co , <space> , cW , co , cr , cl , cd , c! ])
+/Hello_World ([ cH , ce , cl , cl , co , <space> , cW , co , cr , cl , cd , c! ])

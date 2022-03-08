@@ -53,11 +53,17 @@
 
 # append element a at front to list b
 /cons (\a \l tup (tup a false) l)
+# allias
+/. cons
 
 # get head and tail from list
 /head (\l first (first l))
 /tail second
 /eq[] second
+
+/[ (\x \f f x)
+/, (\y \x \f . y (f x))
+/] (\y . y  [])
 
 # ======================================
 # Numbers: subtraction (requires tuples)

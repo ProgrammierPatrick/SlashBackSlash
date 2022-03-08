@@ -1,0 +1,53 @@
+and true true
+and true false
+and false true
+and false false
+
+or true true
+or true false
+or false true
+or false false
+
+xor true true
+xor true false
+xor false true
+xor false false
+
+not true
+not false
+
+
+inc 0
+inc 1
+inc 5
+inc 7
+
+dec 0
+dec 1
+dec 5
+dec 7
+
+add 0 0
+add 1 0
+add 0 1
+add 1 1
+add 7 5
+
+is0 0
+is0 1
+is0 5
+is0 7
+
+first (tup 1 2)
+second (tup 1 2)
+
+is[] []
+is[] ([ 1 ])
+is[] ([ 1 , 2 , 3 ])
+head []
+head ([ 1 ])
+head ([ 1 , 2 , 3 ])
+tail []
+tail ([ 1 ])
+tail ([ 1 , 2 , 3 ])
+

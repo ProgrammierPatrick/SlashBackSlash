@@ -23,6 +23,8 @@
 # Numbers
 # =======
 /inc (\n \f \x f (n f x))
+# allias
+/+ inc
 
 /add (\a \b a inc b)
 /mul (\a \b \f a (b f))

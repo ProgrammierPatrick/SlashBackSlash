@@ -89,16 +89,10 @@
 /map (\f \l l (\h \t . (f h) t) [])
 
 # apply f ([ a , b ]) => f a b
-/apply (
-    /apply.R (\r \f \l Y r (f (head l)) (tail l))
-    Y apply.R
-)
+/apply (Y (\r \f \l Y r (f (head l)) (tail l)))
 
 # filter (\n not (is0 n)) ([ 0 , 1 , 2 ]) => [ 1 , 2 ]
 /filter (\f \l l (\h \t f h (. h t) t) [])
 
 # get 1 ([ 3 , 5 , 2 ]) => 5
-/get (
-    /get.R (\r \n \l is0 n (head l) (r (dec n) (tail l))
-    Y get.R
-)
+/get (Y (\r \n \l is0 n (head l) (r (dec n) (tail l)))

@@ -6,7 +6,9 @@
 /throw error
 
 /lift (\f \x return (f x))
+/* lift
 /!lift (\f \x throw (f x))
+/! !lift
 
 /-> (\m \f m f throw)
 /try ->
@@ -14,7 +16,25 @@
 /catch !!
 
 # examples: 
-# value x -> (lift f)
-# error x !! (!lift f)
+# value x -> (* f) => value (f x)
+# error x !! (! f) => error (f x)
 # /op (\m m f e)
 # value x try f catch e
+
+
+# state Monad
+/state (\s \x \op op (\f f x s))
+/result (\x \s state s x)
+
+/swap (\m m state)
+
+/~> (\m \f m f)
+/?? (\m \f m state ~> f)
+
+/~lift (\f \x result (f x))
+/~ ~lift
+/?lift (\f \x state (f x))
+/? ?lift
+
+# state [] x ~> (~ f) => state [] (f x) 
+# state [] x ?? (? f) => state (f []) x 

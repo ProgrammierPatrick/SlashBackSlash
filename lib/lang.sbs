@@ -103,7 +103,7 @@
 )
 /is[] (\l l (\h \t false) true)
 
-/[ (\x \op op x)
+/[ (\x \op op x [])
 /, \a \l \x \op op x ( l . (. a []))
 /] \a \l (l . (. a []))
 

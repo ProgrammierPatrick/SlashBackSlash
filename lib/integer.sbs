@@ -1,8 +1,8 @@
 import lang.sbs
 
 /0_I    (\_ \_ \x x)
-/pos    (\n is0 0_I (\f \_ \_ f n))
-/neg    (\n is0 0_I (\_ \f \_ f n))    
+/pos    (\n is0 n 0_I (\f \_ \_ f n))
+/neg    (\n is0 n 0_I (\_ \f \_ f n))    
 
 /inc_I  (\i i (\n pos (inc n)) (\n neg (dec n)) (pos 1))
 /dec_I  (\i i (\n pos (dec n)) (\n neg (inc n)) (neg 1))

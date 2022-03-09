@@ -14,7 +14,7 @@
 /catch !!
 
 # examples: 
-# value x (lift f)
+# value x -> (lift f)
 # error x !! (!lift f)
 # /op (\m m f e)
 # value x try f catch e

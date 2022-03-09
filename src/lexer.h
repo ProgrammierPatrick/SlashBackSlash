@@ -6,7 +6,15 @@
 #include "model/list.h"
 #include "model/token.h"
 
+struct TestCaseTokens {
+    List<Token> expected;
+    List<Token> test;
+    bool expectError = false;
+    FileLoc loc;
+    TestCaseTokens(const FileLoc& loc) : loc(loc) { }
+};
+
 List<Token> runLexer(const std::string& filename);
-void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, List<Token>& testTokens, bool& expectError);
+std::vector<TestCaseTokens> runLexerForTesting(const std::string& filename);
 
 #endif

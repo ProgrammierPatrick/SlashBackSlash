@@ -28,21 +28,20 @@ struct Lexer {
     std::set<std::string> lexedFiles;
     List<Token> tokens;
 
-    std::string testResult;
-
-    void runLexer(const std::string& filename, bool fromLib, std::istream& file) {
-
+    void runLexer(std::istream& file, const FileLoc& loc) {
+        auto& filename = *loc.filename;
         std::string absPath = std::filesystem::absolute(std::filesystem::path(filename)).string();
 
         if(lexedFiles.find(absPath) != lexedFiles.end())
             return;
         lexedFiles.insert(absPath);
 
-        // std::ifstream file(filename);
         char c;
-        int line = 1;
-        int pos = 1;
+        int line = loc.line;
+        int pos = loc.pos;
+        bool fromLib = loc.fromLib;
 
+        // the next token could be a directive, if it is at the beginning of a line.
         bool maybeDirective = true;
 
         auto nextChar = [&]() {
@@ -52,14 +51,14 @@ struct Lexer {
                 maybeDirective = true;
             } else {
                 pos++;
-                if (c != '_' && ((c < 'a') || (c > 'z')))
+                if (!(c == '_' || (c >= 'a' && c <= 'z')))
                     maybeDirective = false;
             }
 
             return static_cast<bool>(file.get(c));
         };
 
-        auto filenamePtr = std::make_shared<const std::string>(filename);
+        auto& filenamePtr = loc.filename;
 
         if(!file.get(c)) return;
 
@@ -67,7 +66,8 @@ struct Lexer {
 
             if (isWhitespace(c)) {
                 nextChar();
-            } else if(c == '#') {
+            }
+            else if(c == '#') {
                 while(c != '\n' && file)
                     nextChar();
             }
@@ -93,24 +93,13 @@ struct Lexer {
                     }
 
                     bool foundPathFromLib;
-                    auto foundPath = findFile(path, filename, foundPathFromLib);
-                    if(foundPath != "") {
-                        std::ifstream foundFile(foundPath);
-                        runLexer(foundPath, fromLib || foundPathFromLib, foundFile);
+                    auto foundPath = std::make_shared<std::string>(findFile(path, filename, foundPathFromLib));
+                    if(*foundPath != "") {
+                        std::ifstream foundFile(*foundPath);
+                        runLexer(foundFile, FileLoc(foundPath, 0, 0, fromLib || foundPathFromLib));
                     }
                 }
-                else if (maybeDirective && (value == "test_case")) {
-                    while(isWhitespace(c))
-                        nextChar();
-                    
-                    std::string str;
-                    while(c != '\n') {
-                        str += c;
-                        nextChar();
-                    }
-                    testResult = str;
-
-                } else {
+                else {
                     tokens.push_back(Token::makeVar(std::make_shared<std::string>(value), FileLoc(filenamePtr, var_line, var_pos, fromLib)));
                 }
 
@@ -170,44 +159,76 @@ struct Lexer {
 };
 
 List<Token> runLexer(const std::string& filename) {
+    auto filenamePtr = std::make_shared<std::string>(filename);
     Lexer lexer;
     std::ifstream file(filename);
-    lexer.runLexer(filename, false, file);
+    lexer.runLexer(file, FileLoc(filenamePtr, 0, 0, false));
 
     if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
 
-    lexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), lexer.tokens.back().loc.line + 1, 0, false)));
+    lexer.tokens.push_back(Token::makeEnd(FileLoc(filenamePtr, lexer.tokens.back().loc.line + 1, 0, false)));
 
     return lexer.tokens;
 }
 
-void runLexerForTesting(const std::string& filename, List<Token>& fileTokens, List<Token>& testTokens, bool& expectError) {
-    Lexer lexer;
+std::vector<TestCaseTokens> runLexerForTesting(const std::string& filename) {
     std::ifstream file(filename);
-    lexer.runLexer(filename, false, file);
+    auto filenamePtr = std::make_shared<std::string>(filename);
 
-    if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
+    List<Token> common;
+    std::vector<TestCaseTokens> tests;
+    bool firstTest = true;
 
-    lexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename),lexer.tokens.back().loc.line + 1, 0, false)));
-    fileTokens = lexer.tokens;
+    std::stringstream ss;
+    std::string line;
+    int lineNum = 1;
+    int startLineNum = 1; // start of current Data in stream
 
-    if(lexer.testResult == "") {
-        throw SBSException(SBSException::Origin::LEXER, "program called in test mode, but file is missing test_case directive.", FileLoc(std::make_shared<std::string>(filename), 0, 0, false));
+    auto lex = [](std::istream& ss, const FileLoc& loc) {
+        Lexer lexer;
+        lexer.runLexer(ss, loc);
+        return lexer.tokens;
+    };
+
+    auto lexLast = [&]() {
+        ss << std::flush;
+        if (firstTest)
+            common = lex(ss, FileLoc(filenamePtr, startLineNum, 0, false));
+        else {
+            tests.back().test = List<Token>::append(common, lex(ss, FileLoc(filenamePtr, startLineNum, 0, false)));
+            tests.back().test.push_back(Token::makeEnd(FileLoc(filenamePtr, lineNum, 0, false)));
+        }
+        ss = std::stringstream();
+        firstTest = false;
+    };
+
+    while(std::getline(file, line)) {
+        if (line.find("test_case ") == 0) {
+            // test_case directive found, split off text
+
+            lexLast();
+
+            tests.push_back(TestCaseTokens(FileLoc(filenamePtr, lineNum, 0, false)));
+
+            auto expectedStr = line.substr(10);
+            if (expectedStr == "ERROR") {
+                tests.back().expectError = true;
+            } else {
+                auto ss = std::stringstream(expectedStr);
+                tests.back().expected = List<Token>::append(common, lex(ss, FileLoc(filenamePtr, lineNum, 10, false)));
+                tests.back().expected.push_back(Token::makeEnd(FileLoc(filenamePtr, lineNum, line.size(), false)));
+            }
+
+            startLineNum = lineNum + 1;
+        } else {
+            ss << line << "\n";
+        }
+
+        lineNum++;
     }
+    lexLast();
 
-    if(lexer.testResult == "ERROR") {
-        expectError = true;
-    } else {
-        expectError = false;
+    if(tests.size() == 0) throw std::runtime_error("runLexerForTesting(): file " + filename + " is empty.");
 
-        Lexer resultLexer;
-        std::stringstream sstream(lexer.testResult);
-        resultLexer.runLexer(filename, false, sstream);
-
-        if(resultLexer.tokens.size() == 0) throw std::runtime_error("runLexer(): expeted expression in file " + filename + " is empty.");
-
-        resultLexer.tokens.push_back(Token::makeEnd(FileLoc(std::make_shared<std::string>(filename), resultLexer.tokens.back().loc.line + 1, 0, false)));
-        testTokens = resultLexer.tokens;
-
-    }
+    return tests;
 }

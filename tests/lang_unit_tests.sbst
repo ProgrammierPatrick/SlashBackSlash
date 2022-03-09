@@ -1,53 +1,101 @@
+import lang.sbs
+import const.sbs
+
+test_case true
 and true true
+test_case false
 and true false
+test_case false
 and false true
+test_case false
 and false false
 
+test_case true
 or true true
+test_case true
 or true false
+test_case true
 or false true
+test_case false
 or false false
 
+test_case false
 xor true true
+test_case true
 xor true false
+test_case true
 xor false true
+test_case false
 xor false false
 
+test_case false
 not true
+test_case true
 not false
 
-
+test_case 1
 inc 0
+test_case 2
 inc 1
+test_case 6
 inc 5
+test_case 8
 inc 7
 
+test_case 0
 dec 0
+test_case 0
 dec 1
+test_case 4
 dec 5
+test_case 6
 dec 7
 
+test_case 0
 add 0 0
+test_case 1
 add 1 0
+test_case 1
 add 0 1
+test_case 2
 add 1 1
+test_case 12
 add 7 5
 
+test_case true
 is0 0
+test_case false
 is0 1
+test_case false
 is0 5
+test_case false
 is0 7
 
+test_case 1
 first (tup 1 2)
+test_case 2
 second (tup 1 2)
 
+test_case . 1 2
+[ 1 , 2 ]
+test_case . (. 1 2) 3
+[ 1 , 2 , 3 ]
+test_case true 
 is[] []
+test_case false
 is[] ([ 1 ])
+test_case false
 is[] ([ 1 , 2 , 3 ])
+test_case id
 head []
+test_case 1
 head ([ 1 ])
+test_case 1
 head ([ 1 , 2 , 3 ])
+test_case []
 tail []
+test_case []
 tail ([ 1 ])
+test_case [ 2 , 3 ]
 tail ([ 1 , 2 , 3 ])
 

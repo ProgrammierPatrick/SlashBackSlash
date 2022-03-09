@@ -14,7 +14,7 @@ else()
 endif()
 
 file(GLOB_RECURSE sbs_src_files "src/*.cpp" "src/*.h")
-list(REMOVE_ITEM sbs_src_files "src/main.cpp")
+list(REMOVE_ITEM sbs_src_files "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
 add_library(sbs_lib ${sbs_src_files})
 

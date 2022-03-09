@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-
 #include "lexer.h"
 #include "parser.h"
 #include "exec.h"
@@ -18,73 +17,88 @@ int main(int argc, char **argv) {
     if(ret != 0) return ret;
 
     if(cli.test) {
-        List<Token> tokens;
-        List<Token> expectedTokens;
-        bool expectError;
         if (cli.verbose) std::cerr << "run lexer" << std::endl;
-        runLexerForTesting(cli.filename, tokens, expectedTokens, expectError);
+        std::vector<TestCaseTokens> tests = runLexerForTesting(cli.filename);
 
         if(cli.printLexer) {
-            if(!expectError){
-                std::cerr << "expected: ";
-                for(auto t : expectedTokens)
+            for(auto& test : tests) {
+                if(!test.expectError) {
+                    std::cerr << "expected: ";
+                    for(auto t : test.expected)
+                        if(cli.showLib || !t.loc.fromLib)
+                            std::cerr << toString(t);
+                    std::cerr << std::endl;
+                }
+                std::cerr << "test: ";
+                for(auto t : test.test) {
                     if(cli.showLib || !t.loc.fromLib)
                         std::cerr << toString(t);
+                }
                 std::cerr << std::endl;
             }
-            for(auto t : tokens)
-                if(cli.showLib || !t.loc.fromLib)
-                    std::cerr << toString(t);
-            std::cerr << std::endl;
         }
 
-        if(expectError) {
-            bool receivedException = true;
-            try {
-                if (cli.verbose) std::cerr << "run parser" << std::endl;
-                Exec exec(parse(tokens));
-                while(!exec.isDone()) {
-                    exec.step(false);
-                    if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
-                }
-                receivedException = false;
-            } catch(SBSException&) { }
+        bool failedAny = false;
+        for (size_t i = 0; i < tests.size(); i++) {
+            auto& test = tests[i];
+            std::string msg;
+            bool failed = false;
 
-            if(!receivedException) {
-                std::cerr << "Test failed: no error in '" << cli.filename << "'." << std::endl;
-                return -1;
-            } else return 0;
-        } else {
-            try {
-                if (cli.verbose) std::cerr << "run parser for expected value" << std::endl;
-                Exec expectedExec(parse(expectedTokens));
-                while(!expectedExec.isDone()) expectedExec.step(false);
-                std::string expectedState = expectedExec.printState(false);
+            if(test.expectError) {
+                bool receivedException = true;
+                try {
+                    if (cli.verbose) std::cerr << "run parser" << std::endl;
+                    Exec exec(parse(test.test));
+                    while(!exec.isDone()) {
+                        exec.step(false);
+                        if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
+                    }
+                    receivedException = false;
+                } catch(SBSException&) { }
 
-                if (cli.verbose) std::cerr << "run main parser" << std::endl;
-                Exec exec(parse(tokens));
-                while(!exec.isDone()) {
-                    exec.step(false);
-                    if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
+                if(!receivedException) {
+                    msg = "no error in '" + *test.loc.filename + "':" + std::to_string(test.loc.line) + ".";
+                    failed = true;
                 }
-                std::string resultState = exec.printState(false);
+            } else {
+                try {
+                    if (cli.verbose) std::cerr << "run parser for expected value" << std::endl;
+                    Exec expectedExec(parse(test.expected));
+                    while(!expectedExec.isDone()) expectedExec.step(false);
+                    std::string expectedState = expectedExec.printState(false);
 
-                if (cli.verbose) std::cerr << "check alpha equivalence" << std::endl;
-                if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
-                    std::cerr << "Test failed: result of '" << cli.filename << "' does not match expected result." << std::endl
-                        << "expected: " << expectedState << std::endl
-                        << "result: " << resultState << std::endl;
-                    return -1;
+                    if (cli.verbose) std::cerr << "run main parser" << std::endl;
+                    Exec exec(parse(test.test));
+                    while(!exec.isDone()) {
+                        exec.step(false);
+                        if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
+                    }
+                    std::string resultState = exec.printState(false);
+
+                    if (cli.verbose) std::cerr << "check alpha equivalence" << std::endl;
+                    if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
+                        msg = "result of '" + *test.loc.filename + "':" + std::to_string(test.loc.line) + " does not match expected result.";
+                        msg += "\n  expected: " + expectedState;
+                        msg += "\n  result: " + resultState;
+                        failed = true;
+                    }
                 }
-                
-                return 0;
+                catch(std::exception& e) {
+                    msg = e.what();
+                    failed = true;
+                }
             }
-            catch(std::exception& e) {
-                std::cerr << "Test failed: " << e.what() << std::endl;
-                return -1;
-            }
+
+            std::cerr << "test " << (i + 1) << " / " << tests.size() << ": ";
+            if (failed)
+                std::cerr << "failed! " << msg << "\n";
+            else
+                std::cerr << "Ok.\n";
+
+            if (failed) failedAny = true;
         }
 
+        return failedAny ? -1 : 0;
     }
     else {
         List<Token> tokens;

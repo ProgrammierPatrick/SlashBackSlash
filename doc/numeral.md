@@ -65,6 +65,16 @@ Tests if argument is 0
 &nbsp;&nbsp;-*n*: the numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is 0 then true else false
 
+`even n`
+Tests if argument is even
+&nbsp;&nbsp;-*n*: the numeral that should be checked  
+&nbsp;&nbsp;-*returns*: if *n* is even then true else false
+
+`odd n`
+Tests if argument is even
+&nbsp;&nbsp;-*n*: the numeral that should be checked  
+&nbsp;&nbsp;-*returns*: if *n* is odd then true else false
+
 `ge n m`  
 Tests if first argument is greater or equal to second argument  
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
@@ -88,25 +98,3 @@ Tests if first argument is less then second argument
 &nbsp;&nbsp;-*n*: the first numeral that should be checked  
 &nbsp;&nbsp;-*m*: the second numeral that should be checked  
 &nbsp;&nbsp;-*returns*: if *n* is less *m* then true else false
-
-## Cast to
-`<B-N> b`  
-Casts a Boolean to a Numeral  
-&nbsp;&nbsp;-*b*: the Boolean that should be casted  
-&nbsp;&nbsp;-*returns*: 1 if *b* is true else 0
-
-`<I-N> i`  
-Casts a Integer to a Numeral  
-&nbsp;&nbsp;-*i*: the Integer that should be casted  
-&nbsp;&nbsp;-*returns*: the value of the integer if it is positive else 0
-
-## Cast from
-`<N-B> n`  
-Casts a Numeral to a Boolean  
-&nbsp;&nbsp;-*n*: the Numeral that should be casted  
-&nbsp;&nbsp;-*returns*: true if *n* is not 0 else false
-
-`<N-I> n`  
-Casts a Numeral to a Integer  
-&nbsp;&nbsp;-*n*: the Numeral that should be casted  
-&nbsp;&nbsp;-*returns*: an Integer with the same value as *n*

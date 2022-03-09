@@ -21,19 +21,6 @@
 /not (\a a false true)
 /xor (\a \b a (not b) b)
 
-# =======
-# Numbers
-# =======
-/inc (\n \f \x f (n f x))
-# allias n + m
-/+ inc
-
-/add (\a \b a inc b)
-/mul (\a \b \f a (b f))
-/is0 (\n n (\x false) true)
-
-/0 (\f \x x)
-
 # ======
 # Tuples
 # ======
@@ -47,6 +34,26 @@
 # /f (first t)
 # get second element
 # /s (second t)
+
+# =======
+# Numbers
+# =======
+/0 (\f \x x)
+/inc (\n \f \x f (n f x))
+# allias n + m
+/+ inc
+
+/add (\a \b a inc b)
+/mul (\a \b \f a (b f))
+/is0 (\n n (\x false) true)
+/dec (\n second
+    (
+        n
+        (\p tup (inc (p first)) (p first))
+        (tup 0 0)
+    )
+)
+/sub (\a \b b dec a)
 
 # =====
 # Lists
@@ -75,13 +82,14 @@
 /, (\y \x \f . y (f x))
 /] (\y . y  [])
 
-# ======================================
-# Numbers: subtraction (requires tuples)
-/dec (\n second
-    (
-        n
-        (\p tup (inc (p first)) (p first))
-        (tup 0 0)
-    )
-)
-/sub (\a \b b dec a)
+# len ([ a , b ]) => 2
+/len (\l l (\h \t + t) 0)
+
+# map f ([ a , b ]) => [ (f a) , (f b) ]
+/map (\f \l l (\h \t . (f h) t) [])
+
+# apply f ([ a , b ]) => f a b
+/apply (\r \f \l Y r (f (head l)) (tail l) )
+
+# filter (\n not (is0 n)) ([ 0 , 1 , 2 ]) => [ 1 , 2 ]
+/filter (\f \l l (\h \t f h (. h t) t) [])

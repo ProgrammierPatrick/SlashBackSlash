@@ -6,6 +6,7 @@
 #include <memory>
 #include <variant>
 #include <ostream>
+#include <vector>
 
 struct IL {
     struct Section {

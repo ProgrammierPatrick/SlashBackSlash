@@ -105,6 +105,8 @@ std::vector<std::shared_ptr<const std::string>> ASTGetUnboundVars(const AST& ast
             return { ast.getVar().name };
         else return { };
     }
+
+    throw std::runtime_error("ASTGetUnboundVars: undefined AST type encountered.");
 }
 
 std::vector<std::shared_ptr<const std::string>> AST::getUnboundVars() const {
@@ -128,6 +130,7 @@ bool ASTisPure(const AST& ast, const std::vector<std::string>& boundVars) {
     if (ast.isVar()) {
         return std::find(boundVars.begin(), boundVars.end(), *ast.getVar().name) != boundVars.end();
     }
+    throw std::runtime_error("ASTisPure: undefined AST type encountered.");
 }
 
 bool AST::isPure() const {

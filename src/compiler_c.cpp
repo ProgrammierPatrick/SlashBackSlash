@@ -3,6 +3,7 @@
 #include "sbsexception.h"
 
 #include <sstream>
+#include <algorithm>
 
 // src: https://en.cppreference.com/w/cpp/utility/variant/visit
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
@@ -150,7 +151,7 @@ std::string compileToC(const IL& il, bool traceExecution) {
                         auto var = nextHeapVar++;
                         ss << "    func_t* h" << var << " = heap_alloc(" << op.pushVars.size() + 2 << ");\n";
                         ss << "    h" << var << "[0] = _" << toSafeStr(op.section->name) << ";\n";
-                        for (int i = 0; i < op.pushVars.size(); i++)
+                        for (size_t i = 0; i < op.pushVars.size(); i++)
                             ss << "    h" << var << "[" << i + 1 << "] = v" << op.pushVars[i] << ".func;\n";
                         ss << "    h" << var << "[" << op.pushVars.size() + 1 << "] = 0;\n";
                         ss << "    push(__call_closure, h" << var << ");\n";

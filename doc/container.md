@@ -93,11 +93,11 @@ this function creats a List with elements that fullfill the Predicate *p*
 `[ a , b , c ]` is equivalent to `. a (. b (. c []))`
 
 ### Definitions
-`<list-builder> x op`
-List Builder make it easier to create Lists
+`<list-builder> x op`  
+List Builder make it easier to create Lists  
 &nbsp;&nbsp;-*x*: Element that should be added to the list  
-&nbsp;&nbsp;-*op*: Next Operation for building the list (either `,` or `]`) 
-&nbsp;&nbsp;-*returns*: returns `op x l` where *l* is the stored list
+&nbsp;&nbsp;-*op*: Next Operation for building the list (either `,` or `]`)  
+&nbsp;&nbsp;-*returns*: returns `op x l` where *l* is the stored list  
 
 `[`  
 This Operator is a List Builder containing the Empty list  

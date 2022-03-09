@@ -103,14 +103,14 @@ List Builder make it easier to create Lists
 This Operator is a List Builder containing the Empty list  
 &nbsp;&nbsp;-*returns*: list builder containing the Empty list  
 
-`, a l`
-This Operator is a List Builder containing *l* attached *a*
-&nbsp;&nbsp;-*a*: Element that should be added at the end of the list 
-&nbsp;&nbsp;-*l*: the previous list
-&nbsp;&nbsp;-*returns*: List Builder containing *l* attached *a*
+`, a l`  
+This Operator is a List Builder containing *l* attached *a*  
+&nbsp;&nbsp;-*a*: Element that should be added at the end of the list  
+&nbsp;&nbsp;-*l*: the previous list  
+&nbsp;&nbsp;-*returns*: List Builder containing *l* attached *a*  
 
-`] a l`
-This Operator returns *l* attached *a*
-&nbsp;&nbsp;-*a*: Element that should be added at the end of the list 
-&nbsp;&nbsp;-*l*: the previous list
-&nbsp;&nbsp;-*returns*: List containing *l* attached *a*
+`] a l`  
+This Operator returns *l* attached *a*  
+&nbsp;&nbsp;-*a*: Element that should be added at the end of the list  
+&nbsp;&nbsp;-*l*: the previous list  
+&nbsp;&nbsp;-*returns*: List containing *l* attached *a*  

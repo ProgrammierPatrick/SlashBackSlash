@@ -89,7 +89,7 @@
 
 # append element a at front to list b
 /cons (\h \t \f \x f h (t f x))
-# allias l1 . l2
+# alias l1 . l2
 /. cons
 
 # get head and tail from list
@@ -104,8 +104,8 @@
 /is[] (\l l (\h \t false) true)
 
 /[ (\x \op op x [])
-/, \a \l \x \op op x ( l . (. a []))
-/] \a \l (l . (. a []))
+/, (\a \l \x \op op x ( l . (. a [])))
+/] (\a \l (l . (. a [])))
 
 # len ([ a , b ]) => 2
 /len (\l l (\h \t + t) 0)
@@ -120,4 +120,4 @@
 /filter (\f \l l (\h \t f h (. h t) t) [])
 
 # get 1 ([ 3 , 5 , 2 ]) => 5
-/get (Y (\r \n \l is0 n (head l) (r (dec n) (tail l)))
+/get (Y (\r \n \l is0 n (head l) (r (dec n) (tail l))))

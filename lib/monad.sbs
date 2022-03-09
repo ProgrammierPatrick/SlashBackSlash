@@ -16,5 +16,5 @@
 # examples: 
 # value x (lift f)
 # error x !! (!lift f)
-# /op (\m m try catch)
+# /op (\m m f e)
 # value x try f catch e

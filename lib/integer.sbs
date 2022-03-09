@@ -1,0 +1,23 @@
+import lang.sbs
+
+/0_I    (\_ \_ \x x)
+/pos    (\n is0 0_I (\f \_ \_ f n))
+/neg    (\n is0 0_I (\_ \f \_ f n))    
+
+/inc_I  (\i i (\n pos (inc n)) (\n neg (dec n)) (pos 1))
+/dec_I  (\i i (\n pos (dec n)) (\n neg (inc n)) (neg 1))
+
+/is0_I  (\i i (\n false) (\n false) true)
+/is_pos (\i i (\n true) (\n false) false)
+/is_neg (\i i (\n false) (\n true) false)
+/abs    (\i i (\n n) (\n n) 0)
+/-      (\i i (\n neg n) (\n pos n) 0_I)
+
+/add_I (\a \b a (\n n inc_I b) (\n n dec_I b) b)
+/sub_I (\a \b b (\n n dec_I a) (\n n inc_I a) a)
+
+/mul_I (\a \b 
+    xor (is_neg a) (is_neg b) neg pos
+    (mul (abs a) (abs b))
+)
+

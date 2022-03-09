@@ -54,6 +54,8 @@
     )
 )
 /sub (\a \b b dec a)
+/even (\n n not true)
+/odd (\n n not false)
 
 # =====
 # Lists
@@ -89,7 +91,7 @@
 /map (\f \l l (\h \t . (f h) t) [])
 
 # apply f ([ a , b ]) => f a b
-/apply (Y (\r \f \l Y r (f (head l)) (tail l)))
+/apply (Y (\r \f \l r (f (head l)) (tail l)))
 
 # filter (\n not (is0 n)) ([ 0 , 1 , 2 ]) => [ 1 , 2 ]
 /filter (\f \l l (\h \t f h (. h t) t) [])

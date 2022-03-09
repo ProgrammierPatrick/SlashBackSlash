@@ -1,0 +1,20 @@
+# error Monad
+/value (\x \op op (\f \e f x))
+/return value
+
+/error (\x \op op (\f \e e x))
+/throw error
+
+/lift (\f \x return (f x))
+/!lift (\f \x throw (f x))
+
+/-> (\m \f m f throw)
+/try ->
+/!! (\m \f m return f)
+/catch !!
+
+# examples: 
+# value x (lift f)
+# error x !! (!lift f)
+# /op (\m m try catch)
+# value x try f catch e

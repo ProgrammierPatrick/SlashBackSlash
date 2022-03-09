@@ -103,9 +103,9 @@
 )
 /is[] (\l l (\h \t false) true)
 
-/[ (\x \f f x)
-/, (\y \x \f . y (f x))
-/] (\y . y  [])
+/[ (\x \op op x)
+/, \a \l \x \op op x ( l . (. a []))
+/] \a \l (l . (. a []))
 
 # len ([ a , b ]) => 2
 /len (\l l (\h \t + t) 0)

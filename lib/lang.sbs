@@ -48,7 +48,7 @@
 /dec (\n second
     (
         n
-        (\p tup (inc (p first)) (p first))
+        (\p tup (inc (first p)) (first p))
         (tup 0 0)
     )
 )

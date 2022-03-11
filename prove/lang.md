@@ -57,9 +57,17 @@ there are only finite combinations to test
 `0` := `(\f \x x)`  
 `inc`,`+` := `(\n \f \x f (n f x))` := *n* + *1*  
 `add` := `(\a \b a inc b)`  
-`dec` := `(\n second(n(\p tup (inc (first p)) (first p))(tup 0 0)))`
-`sub` :=  `(\a \b b dec a)`
-`mul` := `(\a \b \f a (b f))`
+`dec` := `(\n second(n(\p tup (inc (first p)) (first p))(tup 0 0)))`  
+`sub` := `(\a \b b dec a)`  
+`mul` := `(\a \b \f a (b f))`  
+`is0` := `(\n n (\x false) true)`  
+`ge` := `(\n \m is0 (sub m n))`  
+`le` := `(\n \m ge m n)`  
+`gt` := `(\n \m not (le n m))`  
+`lt` := `(\n \m gt m n)`  
+`eq` := `eq (\n \m and (\ge n m) (\le n m))`  
+`even` := `(\n n not true)`  
+`odd` := `(\n n not false)`
 ## Correctness
 ### z.z. `add a b` = *a* + *b*
 #### IA *a* = *0*
@@ -179,3 +187,82 @@ there are only finite combinations to test
 `b f ((\a \b \f a (b f)) a b f x)`  
 `b f (mul a b f x)`  
 `add b (mul a b) f x`  
+
+### z.z. `is0 0` = `true`
+`is0 0`  
+`(\n n (\x false) true) 0`  
+`0 (\x false) true`  
+`true`  
+
+### z.z. `is0 (inc n)` = `false`
+`is0 (inc n)`  
+`(\n n (\x false) true) (inc n)`  
+`inc n (\x false) true`  
+`(\n \f \x f (n f x)) n (\x false) true`  
+`(\x false) (n (\x false) true)`   
+`false`  
+
+### z.z. `ge (add a b) a` = `true`
+`ge (add a b) a`  
+`(\n \m is0 (sub m n)) (add a b) a`  
+`is0 (sub a (add a b))`  
+`is0 0`  
+`true`
+### z.z. `ge a (add a (inc b))` = `false`
+`ge a (add a (inc b))`  
+`(\n \m is0 (sub m n)) a (add a (inc b))`  
+`is0 (sub (add a (inc b)) a)`  
+`is0 (inc b)`  
+`false`  
+### `le`,`gt`,`lt`
+simple variants of `ge`
+### z.z. `eq n n` = `true`
+`eq n n`  
+`(\n \m and (\ge n m) (\le n m)) n n`  
+`and (\ge n n) (\le n n)`  
+`and true true`  
+`true`  
+
+### z.z. `eq n (add n (inc m))` = `false`  
+`eq n (add n (inc m))`  
+`(\n \m and (\ge n m) (\le n m)) n (add n (inc m))`  
+`and (\ge n (add n (inc m))) (\le n (add n (inc m)))`  
+`and false true`  
+`false`  
+
+### z.z. `eq (add m (inc n)) m` = `false`  
+`eq (add m (inc n)) m`  
+`(\n \m and (\ge n m) (\le n m)) (add m (inc n)) m`  
+`and (\ge (add m (inc n)) m) (\le (add m (inc n)) m)`  
+`and true fasle`  
+`fasle`  
+
+### `even (mul 2 n)` = `true` 
+#### `n` = `0`
+`even (mul 2 0)`
+`even 0`
+`(\n n not true) 0`
+`0 not true`
+`true`
+#### `n` => `inc n`  
+`even (mul 2 (inc n))`  
+`even (add 2 (mul 2 n))`   
+`(\n n not true) (add 2 (mul 2 n))`  
+`add 2 (mul 2 n) not true`  
+`2 not (mul 2 n not true)`  
+`2 not ((\n n not true)(mul 2 n))`  
+`2 not (even (mul 2 n))`  
+`2 not true`  
+`1 not false`  
+`true`  
+### `even (inc (mul 2 n))` = `false` 
+`even (inc (mul 2 n))`   
+`(\n n not true) (inc (mul 2 n))`   
+`inc (mul 2 n) not true `  
+`(\n \f \x f (n f x)) (mul 2 n) not true`  
+`not (mul 2 n not true)`  
+`not ((\n n not true) (mul 2 n))` 
+`not true`   
+`false`  
+### `odd`
+analog

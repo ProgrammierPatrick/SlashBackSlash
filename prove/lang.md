@@ -1,3 +1,22 @@
+# Common Functions
+## Definitions
+`id`, `_` := `(\x x)`  
+`Y` := `(\f (\x f (x x)) (\x f (x x)))`  
+
+## Correctness
+### z.z. `id x` = `x`
+`id x`  
+`(\x x) x`  
+`x`  
+
+### z.z. `Y f` = `f (Y f)`
+`Y f`  
+`(\f (\x f (x x)) (\x f (x x))) f`  
+`(\x f (x x)) (\x f (x x))`  
+`f ((\x f (x x)) (\x f (x x)))`  
+`f ((\f (\x f (x x)) (\x f (x x))) f)` 
+`f (Y f)`  
+
 # Logic
 ## Definitions
 `true` :=  `(\t \f t)`  
@@ -39,6 +58,7 @@ there are only finite combinations to test
 `inc`,`+` := `(\n \f \x f (n f x))` := *n* + *1*  
 `add` := `(\a \b a inc b)`  
 `dec` := `(\n second(n(\p tup (inc (first p)) (first p))(tup 0 0)))`
+`sub` :=  `(\a \b b dec a)`
 ## Correctness
 ### z.z. `add a b` = *a* + *b*
 #### IA *a* = *0*
@@ -77,3 +97,46 @@ there are only finite combinations to test
 `second(inc n(\p tup (inc (first p)) (first p))(tup 0 0))`  
 `second(tup (inc n) n)`  
 `n`  
+### z.z. `dec 0` = `0`
+`dec 0`  
+`(\n second(n(\p tup (inc (first p)) (first p))(tup 0 0))) 0`  
+`second(0(\p tup (inc (first p)) (first p))(tup 0 0))`  
+`second(tup 0 0)`  
+`0`  
+### z.z. `sub (add a b) b` = `a`
+#### IA `b` = `0`
+`sub (add a 0) 0`  
+`sub a 0`  
+`(\a \b b dec a) a 0`  
+`0 dec a`  
+`a`  
+### IS `b` => `inc b`
+`sub (add a (inc b)) (inc b)`  
+`(\a \b b dec a) (add a (inc b)) (inc b)`  
+`inc b dec (add a (inc b))`  
+`(\n \f \x f (n f x)) b dec (add a (inc b))`  
+`dec (b dec (add a (inc b)))`  
+`dec ((\a \b b dec a) (add a (inc b)) b)`  
+`dec (sub (add a (inc b)) b)`   
+`dec (sub (inc (add a b)) b)`  
+`dec (sub (add (inc a) b) b)`  
+`dec (inc a)`   
+`a`  
+
+### z.z. `sub a (add a b)` = `0`
+#### IA `b` = `0` 
+`sub a (add a 0)`  
+`sub a a`  
+`sub (add 0 a) a`  
+`0`  
+#### IS `b` => `inc b`
+`sub a (add a (inc b))`  
+`sub a (inc (add a b))`  
+`(\a \b b dec a) a (inc (add a b))`  
+`inc (add a b) dec a`  
+`(\n \f \x f (n f x)) (add a b) dec a`  
+`dec ((add a b) dec a)`  
+`dec ((\a \b b dec a) a (add a b))`  
+`dec (sub a (add a b))`  
+`dec 0`  
+`0`  

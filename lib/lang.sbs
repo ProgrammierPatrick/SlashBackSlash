@@ -57,7 +57,7 @@
 /mul (\a \b \f a (b f))
 
 /is0 (\n n (\x false) true)
-/ge (\n \m is0 (x dec y))
+/ge (\n \m is0 (sub m n))
 /le (\n \m ge m n)
 /gt (\n \m not (le n m))
 /lt (\n \m gt m n)

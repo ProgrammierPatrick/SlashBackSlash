@@ -59,6 +59,7 @@ there are only finite combinations to test
 `add` := `(\a \b a inc b)`  
 `dec` := `(\n second(n(\p tup (inc (first p)) (first p))(tup 0 0)))`
 `sub` :=  `(\a \b b dec a)`
+`mul` := `(\a \b \f a (b f))`
 ## Correctness
 ### z.z. `add a b` = *a* + *b*
 #### IA *a* = *0*
@@ -75,6 +76,25 @@ there are only finite combinations to test
 `inc (a inc b)`  
 `inc ((\a \b a inc b) a b)`  
 `inc (add a b)`  
+### z.z. `add a b f x` = `a f (b f x)`
+#### IA `a` = `0`
+`add 0 b f x`  
+`(\a \b a inc b) 0 b f x`  
+`0 inc b f x`  
+`b f x`  
+`0 f (b f x)`  
+#### IS `a` => `inc a`
+`add (inc a) b f x`  
+`inc (add a b) f x`  
+`inc ((\a \b a inc b) a b) f x`  
+`inc (a inc b) f x`  
+`(\n \f \x f (n f x)) (a inc b) f x`  
+`f ((a inc b) f x)`  
+`f (add a b f x)`  
+`f (a f (b f x))`  
+`(\n \f \x f (n f x)) a f (b f x)`  
+`inc a f (b f x)`  
+
 ### z.z. `inc n (\p tup (inc (first p)) (first p))(tup 0 0)` = `tup (inc n) n`
 #### IA `n` = `0`
 `inc n (\p tup (inc (first p)) (first p))(tup 0 0)`  
@@ -140,3 +160,22 @@ there are only finite combinations to test
 `dec (sub a (add a b))`  
 `dec 0`  
 `0`  
+
+### z.z. `mul a b` = *a* * *b*
+#### IA *a* = *0*
+`mul 0 b f x`  
+`(\a \b \f a (b f)) 0 b f x`  
+`0 (b f) x`  
+`(\f \x x) (b f) x`  
+`x`  
+`(\f \x x) f x`  
+`0 f x`  
+#### IA *a* => *a* + *1*
+`mul (inc a) b f x`  
+`(\a \b \f a (b f)) (inc a) b f x`  
+`inc a (b f) x`  
+`(\n \f \x f (n f x)) a (b f) x`  
+`b f (a (b f) x)`  
+`b f ((\a \b \f a (b f)) a b f x)`  
+`b f (mul a b f x)`  
+`add b (mul a b) f x`  

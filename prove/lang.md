@@ -14,7 +14,7 @@
 `(\f (\x f (x x)) (\x f (x x))) f`  
 `(\x f (x x)) (\x f (x x))`  
 `f ((\x f (x x)) (\x f (x x)))`  
-`f ((\f (\x f (x x)) (\x f (x x))) f)` 
+`f ((\f (\x f (x x)) (\x f (x x))) f)`  
 `f (Y f)`  
 
 # Logic
@@ -71,16 +71,16 @@ there are only finite combinations to test
 ## Correctness
 ### z.z. `add a b` = *a* + *b*
 #### IA *a* = *0*
-`add 0 b`
+`add 0 b`  
 `(\a \b a inc b) 0 b`  
-`0 inc b` 
+`0 inc b`  
 `(\f \x x) inc b`  
 `b`  
 #### IS *a* => *a* + *1*
-`add (inc a) b`
+`add (inc a) b`  
 `(\a \b a inc b) (inc a) b`  
 `inc a inc b`  
-`(\n \f \x f (n f x)) a inc b`  
+`(\n \f \x f (n f x)) a inc b`    
 `inc (a inc b)`  
 `inc ((\a \b a inc b) a b)`  
 `inc (add a b)`  
@@ -109,8 +109,8 @@ there are only finite combinations to test
 `(\n \f \x f (n f x)) n (\p tup (inc (first p)) (first p))(tup 0 0)`  
 `(\p tup (inc (first p)) (first p)) (0 (\p tup (inc (first p)) (first p)) (tup 0 0))`  
 `(\p tup (inc (first p)) (first p)) ((\f \x x) (\p tup (inc (first p)) (first p)) (tup 0 0))`  
-`(\p tup (inc (first p)) (first p)) (tup 0 0)`
-`tup (inc (first (tup 0 0))) (first (tup 0 0))`
+`(\p tup (inc (first p)) (first p)) (tup 0 0)`  
+`tup (inc (first (tup 0 0))) (first (tup 0 0))`  
 `tup (inc 0) 0`
 #### IS `inc n` => `inc (inc n)`
 `inc (inc n) (\p tup (inc (first p)) (first p)) (tup 0 0)`  
@@ -237,12 +237,12 @@ simple variants of `ge`
 `and true fasle`  
 `fasle`  
 
-### `even (mul 2 n)` = `true` 
+### z.z. `even (mul 2 n)` = `true` 
 #### `n` = `0`
-`even (mul 2 0)`
-`even 0`
-`(\n n not true) 0`
-`0 not true`
+`even (mul 2 0)`  
+`even 0`  
+`(\n n not true) 0`  
+`0 not true`  
 `true`
 #### `n` => `inc n`  
 `even (mul 2 (inc n))`  
@@ -255,13 +255,13 @@ simple variants of `ge`
 `2 not true`  
 `1 not false`  
 `true`  
-### `even (inc (mul 2 n))` = `false` 
+### z.z. `even (inc (mul 2 n))` = `false` 
 `even (inc (mul 2 n))`   
 `(\n n not true) (inc (mul 2 n))`   
 `inc (mul 2 n) not true `  
 `(\n \f \x f (n f x)) (mul 2 n) not true`  
 `not (mul 2 n not true)`  
-`not ((\n n not true) (mul 2 n))` 
+`not ((\n n not true) (mul 2 n))`  
 `not true`   
 `false`  
 ### `odd`

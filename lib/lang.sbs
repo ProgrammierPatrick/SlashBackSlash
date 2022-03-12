@@ -65,20 +65,18 @@
 /even (\n n not true)
 /odd (\n n not false)
 
-# div.R(a,b,c) := c if (c+1) * b > a else div.R(a,b,c+1)
-/div (
-    /div.R (\r \a \b \c gt (mul (+ c) b) a c (r a b (+ c)))
-    (\a \b Y div.R a b 0)
-)
-
-# sdiv.R(a,b,c) := c if c * b > a else sdiv.R(a,b,c+1)
-/sdiv (
-    /sdiv.R (\r \a \b \c gt (mul c b) a c (r a b (+ c)))
-    (\a \b Y div.R a b 0)
-)
-
-# mod := a - ((a/b) * b)
-/mod (\a \b sub a (mul (div a b) b))
+# def divmod(n,m):
+#   a, b = 0
+#   foreach n:
+#       if b+1 < m:
+#           b+=1
+#       else:
+#           a+=1
+#           b=0
+/divmod (\n \m n (\t t (\a \b lt (inc b) m (tup a (inc b)) (tup (inc a) 0))) (tup 0 0))
+/div (\n \m first (divmod n m))
+/mod (\n \m second (divmod n m))
+/sdiv (\n \m (\t is0 (second t) _ inc (first t)) (divmod n m))
 
 # =====
 # Lists

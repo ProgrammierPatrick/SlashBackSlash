@@ -76,9 +76,9 @@ first (tup 1 2)
 test_case 2
 second (tup 1 2)
 
-test_case . 1 2
+test_case . 1 (. 2 [])
 [ 1 , 2 ]
-test_case . (. 1 2) 3
+test_case . 1 (. 2 (. 3 []))
 [ 1 , 2 , 3 ]
 test_case true 
 is[] []

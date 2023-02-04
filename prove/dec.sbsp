@@ -1,0 +1,42 @@
+z.z. inc n (\p tup (inc (first p)) (first p)) (tup 0 0) => tup (inc n) n
+bew.
+    n==0:
+        inc 0 (\p tup (inc (first p)) (first p)) (tup 0 0)
+        (\n \f \x f (n f x)) 0 (\p tup (inc (first p)) (first p)) (tup 0 0)
+        (\p tup (inc (first p)) (first p)) (0 (\p tup (inc (first p)) (first p)) (tup 0 0))
+        (\p tup (inc (first p)) (first p)) ((\f \x x) (\p tup (inc (first p)) (first p)) (tup 0 0))
+        (\p tup (inc (first p)) (first p)) (tup 0 0)
+        tup (inc (first (tup 0 0))) (first (tup 0 0))
+        tup (inc ((\t t true) (tup 0 0))) ((\t t true) (tup 0 0))
+        tup (inc (tup 0 0 true)) (tup 0 0 true)
+        tup (inc ((\a \b \f f a b) 0 0 true)) ((\a \b \f f a b) 0 0 true)
+        tup (inc (true 0 0)) (true 0 0)
+        tup (inc ((\t \f t) 0 0)) ((\t \f t) 0 0)
+        tup (inc 0) 0
+    inc n => inc (inc n):
+        inc (inc n) (\p tup (inc (first p)) (first p)) (tup 0 0)
+        (\n \f \x f (n f x)) (inc n) (\p tup (inc (first p)) (first p)) (tup 0 0)
+        (\p tup (inc (first p)) (first p)) (inc n (\p tup (inc (first p)) (first p)) (tup 0 0))
+        (\p tup (inc (first p)) (first p)) (tup (inc n) n)
+        tup (inc (first (tup (inc n) n))) (first (tup (inc n) n))
+        tup (inc ((\t t true) (tup (inc n) n))) ((\t t true) (tup (inc n) n))
+        tup (inc (tup (inc n) n true)) (tup (inc n) n true)
+        tup (inc ((\a \b \f f a b) (inc n) n true)) ((\a \b \f f a b) (inc n) n true)
+        tup (inc (true (inc n) n)) (true (inc n) n)
+        tup (inc ((\t \f t) (inc n) n)) ((\t \f t) (inc n) n)
+        tup (inc (inc n)) (inc n)
+qed
+    
+z.z. dec (inc n) => n
+bew.
+    dec (inc n)
+    (\n second(n(\p tup (inc (first p)) (first p))(tup 0 0))) (inc n)
+    second((inc n)(\p tup (inc (first p)) (first p))(tup 0 0))
+    (\t t false)((inc n)(\p tup (inc (first p)) (first p))(tup 0 0))
+    inc n (\p tup (inc (first p)) (first p))(tup 0 0) false
+    tup (inc n) n false
+    (\a \b \f f a b) (inc n) n false
+    false (inc n) n
+    (\t \f f) (inc n) n
+    n
+qed

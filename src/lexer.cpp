@@ -50,14 +50,17 @@ unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fi
 
     int line = startLine;
     int pos = startPos;
-    int i = 0;
-    char c = text[i++];
+    int i = 0; // index of current c
+    char c = text[i];
 
     // the next token could be a directive, if it is at the beginning of a line.
     bool maybeDirective = true;
 
-    auto hasNextChar = [&]() -> bool { return i < text.size(); };
-    auto nextChar = [&]() {
+    // include the '\0' at the end: 'abc\0' (len:3) hasNextChar(2):true, hasNextChar(3):false
+    // this is done so that each handler can move i past its token
+    auto hasNextChar = [&]() -> bool { return i < static_cast<int>(text.size()); };
+
+    auto nextChar = [&]() -> void {
         assert(hasNextChar());
 
         if(c == '\n') {
@@ -70,9 +73,9 @@ unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fi
                 maybeDirective = false;
         }
 
-        c = text[i++];
+        c = text[++i];
     };
-    
+
     while (hasNextChar()) {
         if (isWhitespace(c)) {
             nextChar();
@@ -84,7 +87,7 @@ unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fi
         else if (isVariableChar(c)) {
             FileLoc loc(result->filename, line, pos, fromLib); 
 
-            int i_start = i - 1;
+            int i_start = i;
             while (isVariableChar(c) && hasNextChar())
                 nextChar();
             string_view value{text.begin() + i_start, text.begin() + i};
@@ -93,7 +96,7 @@ unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fi
                 while(isWhitespace(c) && hasNextChar())
                     nextChar();
                 
-                int i_start_path = i - 1;
+                int i_start_path = i;
                 while(c != '\n' && hasNextChar())
                     nextChar();
                 string_view path{text.begin() + i_start_path, text.begin() + i};
@@ -132,7 +135,7 @@ LexerResult lexFile(string_view filename) {
 LexerResult lexFile(string_view filename, unique_ptr<string>& fileText, int startLine, int startPos) {
     LexerResult result;
 
-    auto absPath = [](string_view path) { return std::filesystem::absolute(std::filesystem::path(path)).string(); };
+    auto absPath = [](string_view path) { return std::filesystem::canonical(path).string(); };
 
     // Read all files seperately
 
@@ -142,10 +145,11 @@ LexerResult lexFile(string_view filename, unique_ptr<string>& fileText, int star
     auto mainFile = lexSingleFile(filename, fileText, false, startLine, startPos);
     for (auto s : mainFile->importStatements)
         filesToLex.insert({absPath(s.filename), s.isLib});
-    lexedFiles.insert({string{filename}, std::move(mainFile)});
+    lexedFiles.insert({string{absPath(filename)}, std::move(mainFile)});
 
     while (filesToLex.size() > 0) {
-        auto [currentFilename, isLib] = *filesToLex.begin();
+        string currentFilename = filesToLex.begin()->first;
+        bool isLib = filesToLex.begin()->second;
         filesToLex.erase(currentFilename);
 
         auto lexedFile = lexSingleFile(currentFilename, isLib);
@@ -166,28 +170,32 @@ LexerResult lexFile(string_view filename, unique_ptr<string>& fileText, int star
         int i = 0;
         int importIdx = 0;
         while (it != file.tokens.end()) {
-            if (importIdx < file.importStatements.size() && i == file.importStatements[importIdx].tokenIndex) {
+            if (importIdx < static_cast<int>(file.importStatements.size()) && i == file.importStatements[importIdx].tokenIndex) {
                 auto& import = file.importStatements[importIdx++];
 
                 if (std::find(mergedFiles.begin(), mergedFiles.end(), import.filename) == mergedFiles.end()) {
                     std::vector<string_view> nextMergedFiles = mergedFiles;
                     nextMergedFiles.push_back(filename);
 
-                    mergeTokens(file.importStatements[importIdx].filename, nextMergedFiles, mergeTokens);
+                    mergeTokens(import.filename, nextMergedFiles, mergeTokens);
                 }
             }
             result.tokens.push_back(*it);
             ++it;
             ++i;
         }
+        result.fileData.push_back(std::move(lexedFiles[string{filename}]));
     };
     mergeTokens(absPath(filename), {}, mergeTokens);
+
+    FileLoc lastTokenLoc = result.tokens.size() > 0 ? result.tokens.back().loc : FileLoc{ result.fileData.front()->filename, 1, 1, false };
+    result.tokens.push_back(Token::makeEnd(FileLoc{lastTokenLoc.filename, lastTokenLoc.line + 1, 0, lastTokenLoc.fromLib}));
 
     return result;
 }
 
-std::vector<LexerTestCaseResult> lexTestFile(string_view filename) {
-    std::vector<LexerTestCaseResult> result;
+LexerTestsResult lexTestFile(string_view filename) {
+    LexerTestsResult result;
 
     std::ifstream file(string{filename});
     
@@ -214,8 +222,26 @@ std::vector<LexerTestCaseResult> lexTestFile(string_view filename) {
         if (line.find("test_case ") == 0) {
             // test_case directive found, split off text
 
-            if (!beforeFirstTestCase)
-                result.push_back(lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum));
+            if (beforeFirstTestCase) {
+                auto content = make_unique<string>(currentSectionContent);
+                result.commonCode = lexFile(filename, content);
+                currentSectionContent = "";
+
+                // completely unefficient weird hack just because we dont have pop_back()
+                int tokenCount = result.commonCode.tokens.size() - 1;
+                List<Token> tokensWithoutEnd;
+                for (int i = 0; i < tokenCount; i++)
+                    tokensWithoutEnd.push_back(result.commonCode.tokens[i]);
+                result.commonCode.tokens = tokensWithoutEnd;
+
+            } else {
+                auto lexerResult = lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum);
+                currentSectionContent = "";
+                lexerResult.expected.tokens.append_front(result.commonCode.tokens);
+                lexerResult.test.tokens.append_front(result.commonCode.tokens);
+                result.tests.push_back(std::move(lexerResult));
+            } 
+                
             beforeFirstTestCase = false;
 
             expectedContent = line.substr(10);
@@ -227,6 +253,8 @@ std::vector<LexerTestCaseResult> lexTestFile(string_view filename) {
             }
 
             contentLineNum = lineNum;
+        } else {
+            currentSectionContent += line + "\n";
         }
 
         lineNum++;
@@ -235,7 +263,10 @@ std::vector<LexerTestCaseResult> lexTestFile(string_view filename) {
     if (beforeFirstTestCase)
         throw std::runtime_error("lexTestFile(): file " + string{filename} + " does not contain test cases.");
 
-    result.push_back(lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum));
+    auto lexerResult = lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum);
+    lexerResult.expected.tokens.append_front(result.commonCode.tokens);
+    lexerResult.test.tokens.append_front(result.commonCode.tokens);
+    result.tests.push_back(std::move(lexerResult));
 
     return result;
 }

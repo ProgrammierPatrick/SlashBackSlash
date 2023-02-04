@@ -16,12 +16,12 @@ struct LexedFile {
     std::string filename;
     std::unique_ptr<std::string> fileText;
 
-    struct ImportStatement { int tokenIndex; bool isLib; std::string_view filename; };
+    struct ImportStatement { int tokenIndex; bool isLib; std::string filename; };
     std::vector<ImportStatement> importStatements;
 };
 
 std::unique_ptr<LexedFile> lexSingleFile(std::string_view filename, bool fromLib);
-std::unique_ptr<LexedFile> lexSingleFile(std::string_view filename, std::unique_ptr<std::string>& fileText, bool fromLib, int startLine = 0, int startPos = 0);
+std::unique_ptr<LexedFile> lexSingleFile(std::string_view filename, std::unique_ptr<std::string>& fileText, bool fromLib, int startLine = 1, int startPos = 1);
 
 // Result of tokenization of a program including all imports
 struct LexerResult {
@@ -30,7 +30,7 @@ struct LexerResult {
 };
 
 LexerResult lexFile(std::string_view filename);
-LexerResult lexFile(std::string_view filename, std::unique_ptr<std::string>& fileText, int startLine = 0, int startPos = 0);
+LexerResult lexFile(std::string_view filename, std::unique_ptr<std::string>& fileText, int startLine = 1, int startPos = 1);
 
 struct LexerTestCaseResult {
     LexerResult test;
@@ -38,6 +38,11 @@ struct LexerTestCaseResult {
     bool expectError;
 };
 
-std::vector<LexerTestCaseResult> lexTestFile(std::string_view filename);
+struct LexerTestsResult {
+    LexerResult commonCode;
+    std::vector<LexerTestCaseResult> tests;
+};
+
+LexerTestsResult lexTestFile(std::string_view filename);
 
 #endif

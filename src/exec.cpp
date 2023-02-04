@@ -48,7 +48,7 @@ void Exec::step(bool skipLibSteps) {
         else {
             auto& appNode = stack[stack.size() - 2];
             std::shared_ptr<AST> tmpAST = std::make_shared<AST>(AST::App(ast, appNode->getApp().second), appNode->loc, appNode->bindings);
-            for(int i = stack.size() - 3; i >= 0; i--) {
+            for(int i = static_cast<int>(stack.size()) - 3; i >= 0; i--) {
                 auto& currAppNode = stack[i];
                 tmpAST = std::make_shared<AST>(AST::App(tmpAST, currAppNode->getApp().second), currAppNode->loc, currAppNode->bindings);
             }
@@ -64,12 +64,12 @@ void Exec::step(bool skipLibSteps) {
             List<Binding> nextList, valueList;
             if(let.next->getBindFromParent) nextList = stack.back()->bindings;
             if(let.value->getBindFromParent) valueList = stack.back()->bindings;
-            valueList = List<Binding>::append_unique(let.value->bindings, valueList);
+            valueList = List<Binding>::append(let.value->bindings, valueList);
 
             std::shared_ptr<const AST> valueNode = std::make_shared<AST>(*let.value, valueList);
 
             nextList.push_front(Binding(let.name, valueNode, stack.back(), false));
-            nextList = List<Binding>::append_unique(let.next->bindings, nextList);
+            nextList = List<Binding>::append(let.next->bindings, nextList);
             
             auto nextNode = std::make_shared<AST>(*let.next, nextList);
             setNewNode(nextNode);
@@ -160,18 +160,18 @@ void Exec::step(bool skipLibSteps) {
                 List<Binding> appSecondBindings, absNextBindings;
                 for(size_t i = lowestStackIdx; i < stack.size(); i++) {
                     if(app.first->getBindFromParent)
-                        absNextBindings = List<Binding>::append_unique(stack[i]->bindings, absNextBindings);
+                        absNextBindings = List<Binding>::append(stack[i]->bindings, absNextBindings);
                     if(app.second->getBindFromParent)
-                        appSecondBindings = List<Binding>::append_unique(stack[i]->bindings, appSecondBindings);
+                        appSecondBindings = List<Binding>::append(stack[i]->bindings, appSecondBindings);
                 }
 
-                appSecondBindings = List<Binding>::append_unique(appSecond->bindings, appSecondBindings);
+                appSecondBindings = List<Binding>::append(appSecond->bindings, appSecondBindings);
 
                 std::shared_ptr<const AST> bindingNode = std::make_shared<AST>(*appSecond, appSecondBindings);
 
-                absNextBindings = List<Binding>::append_unique(app.first->bindings, absNextBindings);
+                absNextBindings = List<Binding>::append(app.first->bindings, absNextBindings);
                 absNextBindings.push_front(Binding(abs.name, bindingNode, stack.back(), true));
-                absNextBindings = List<Binding>::append_unique(absNext->bindings, absNextBindings);
+                absNextBindings = List<Binding>::append(absNext->bindings, absNextBindings);
                 
                 auto newNode = std::make_shared<AST>(*absNext, absNextBindings);
                 setNewNode(newNode);

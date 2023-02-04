@@ -21,7 +21,13 @@ int main(int argc, char **argv) {
         auto tests = lexTestFile(cli.filename);
 
         if(cli.printLexer) {
-            for(auto& test : tests) {
+            std::cerr << "common: ";
+            for(auto t : tests.commonCode.tokens) {
+                if(cli.showLib || !t.loc.fromLib)
+                    std::cerr << toString(t);
+            }
+            std::cerr << std::endl;
+            for(auto& test : tests.tests) {
                 if(!test.expectError) {
                     std::cerr << "expected: ";
                     for(auto t : test.expected.tokens)
@@ -39,8 +45,8 @@ int main(int argc, char **argv) {
         }
 
         bool failedAny = false;
-        for (size_t i = 0; i < tests.size(); i++) {
-            auto& test = tests[i];
+        for (size_t i = 0; i < tests.tests.size(); i++) {
+            auto& test = tests.tests[i];
             std::string msg;
             bool failed = false;
 
@@ -48,7 +54,13 @@ int main(int argc, char **argv) {
                 bool receivedException = true;
                 try {
                     if (cli.verbose) std::cerr << "run parser" << std::endl;
-                    Exec exec(parse(test.test.tokens));
+
+                    auto ast = parse(test.test.tokens);
+
+                    if(cli.printAST)
+                        std::cerr << toString(*ast, cli.showLib) << std::endl; 
+
+                    Exec exec(ast);
                     while(!exec.isDone()) {
                         exec.step(false);
                         if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
@@ -63,12 +75,23 @@ int main(int argc, char **argv) {
             } else {
                 try {
                     if (cli.verbose) std::cerr << "run parser for expected value" << std::endl;
-                    Exec expectedExec(parse(test.expected.tokens));
+
+                    auto expectedAST = parse(test.expected.tokens);
+                    auto testAST = parse(test.test.tokens);
+
+                    if(cli.printAST) {
+                        std::cout << "Expected AST:\n";
+                        std::cerr << toString(*expectedAST, cli.showLib) << "\n";
+                        std::cout << "Test AST:\n";
+                        std::cerr << toString(*testAST, cli.showLib) << std::endl; 
+                    }
+
+                    Exec expectedExec(expectedAST);
                     while(!expectedExec.isDone()) expectedExec.step(false);
                     std::string expectedState = expectedExec.printState(false);
 
                     if (cli.verbose) std::cerr << "run main parser" << std::endl;
-                    Exec exec(parse(test.test.tokens));
+                    Exec exec(testAST);
                     while(!exec.isDone()) {
                         exec.step(false);
                         if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
@@ -89,7 +112,7 @@ int main(int argc, char **argv) {
                 }
             }
 
-            std::cerr << "test " << (i + 1) << " / " << tests.size() << ": ";
+            std::cerr << "test " << (i + 1) << " / " << tests.tests.size() << ": ";
             if (failed)
                 std::cerr << "failed! " << msg << "\n";
             else

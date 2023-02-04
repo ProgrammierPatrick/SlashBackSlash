@@ -63,12 +63,12 @@ std::shared_ptr<AST> parseVal(const List<Token>& tokens, int& i) {
         auto ast = parseExpr(tokens, i);
 
         if(!tokens[i].isRPar())
-            parseError(tokens[i], "VAR", "\\");
+            parseError(tokens[i], "VAL", ")");
         i++;
 
         return ast;
     }
-    else parseError(tokens[i], "VAL", "[val] (");
+    else parseError(tokens[i], "VAL", "[var] (");
     return nullptr;
 }
 
@@ -80,7 +80,7 @@ std::shared_ptr<AST> parseExpr(const List<Token>& tokens, int& i) {
         return parseLet(tokens, i);
     if (tokens[i].isBSlash())
         return parseAbs(tokens, i);
-    parseError(tokens[i], "EXPR", "[val] ( / \\");
+    parseError(tokens[i], "EXPR", "[var] ( / \\");
     return nullptr;
 }
 
@@ -93,7 +93,7 @@ std::shared_ptr<AST> parseLet(const List<Token>& tokens, int& i) {
     i++;
 
     if(!tokens[i].isVar())
-        parseError(tokens[i], "LET", "[val]");
+        parseError(tokens[i], "LET", "[var]");
 
     auto name = tokens[i].getVar().name;
     i++;
@@ -114,7 +114,7 @@ std::shared_ptr<AST> parseAbs(const List<Token>& tokens, int& i) {
     i++;
 
     if (!tokens[i].isVar())
-        parseError(tokens[i], "ABS", "[val]");
+        parseError(tokens[i], "ABS", "[var]");
     auto name = tokens[i].getVar().name;
     i++;
 

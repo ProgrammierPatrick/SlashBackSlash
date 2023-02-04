@@ -1,4 +1,7 @@
+#include <iostream>
+
 #include <lexer.h>
+#include <model/to_string.h>
 
 #include "testing.h"
 
@@ -17,6 +20,10 @@ void lexer_single_file() {
 
     unique_ptr<LexedFile> lexResult = lexSingleFile(filename, contentMemory, false);
 
+    for (auto t : lexResult->tokens)
+        cout << toString(t) << " ";
+    cout << endl;
+
     ASSERT_EQ(lexResult->filename, filename);
     ASSERT_EQ(*lexResult->fileText, content);
     ASSERT_EQ(lexResult->tokens.size(), 14);
@@ -24,7 +31,7 @@ void lexer_single_file() {
     ASSERT(lexResult->tokens[1].isVar());
     ASSERT(lexResult->tokens[3].isLPar());
     ASSERT(lexResult->tokens[4].isBSlash());
-    ASSERT(lexResult->tokens[7].isRPar());
+    ASSERT(lexResult->tokens[8].isRPar());
     ASSERT(lexResult->tokens[13].isVar());
     ASSERT_EQ(lexResult->tokens[1].getVarName(), "a");
     ASSERT_EQ(lexResult->tokens[2].getVarName(), "a");

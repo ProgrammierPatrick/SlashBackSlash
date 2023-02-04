@@ -1,0 +1,9 @@
+/id (\x x)
+/T (\t\f t)
+/F (\t\f f)
+
+test_case id
+T id T
+
+test_case T
+F id T

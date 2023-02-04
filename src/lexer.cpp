@@ -6,6 +6,7 @@
 #include <iostream>
 #include <filesystem>
 #include <sstream>
+#include <ranges>
 
 #ifdef __unix__
 #include <unistd.h>         // readlink
@@ -16,6 +17,13 @@
 #include <windows.h>
 #endif
 
+using std::make_unique;
+using std::unique_ptr;
+using std::string;
+using std::string_view;
+
+string findFile(string_view name, string_view origin, bool &outFromLib);
+
 bool isWhitespace(char c) {
     return (c == ' ') || (c == '\n') || (c == '\r') || (c == '\t');
 }
@@ -24,211 +32,249 @@ bool isVariableChar(char c) {
     return !isWhitespace(c) && (c != '(') && (c != ')') && (c != '/') && (c != '\\');
 }
 
-struct Lexer {
-    std::set<std::string> lexedFiles;
-    List<Token> tokens;
-
-    void runLexer(std::istream& file, const FileLoc& loc) {
-        auto& filename = *loc.filename;
-        std::string absPath = std::filesystem::absolute(std::filesystem::path(filename)).string();
-
-        if(lexedFiles.find(absPath) != lexedFiles.end())
-            return;
-        lexedFiles.insert(absPath);
-
-        char c;
-        int line = loc.line;
-        int pos = loc.pos;
-        bool fromLib = loc.fromLib;
-
-        // the next token could be a directive, if it is at the beginning of a line.
-        bool maybeDirective = true;
-
-        auto nextChar = [&]() {
-            if(c == '\n') {
-                line++;
-                pos = 1;
-                maybeDirective = true;
-            } else {
-                pos++;
-                if (!(c == '_' || (c >= 'a' && c <= 'z')))
-                    maybeDirective = false;
-            }
-
-            return static_cast<bool>(file.get(c));
-        };
-
-        auto& filenamePtr = loc.filename;
-
-        if(!file.get(c)) return;
-
-        while (file) {
-
-            if (isWhitespace(c)) {
-                nextChar();
-            }
-            else if(c == '#') {
-                while(c != '\n' && file)
-                    nextChar();
-            }
-            else if (isVariableChar(c)) {
-                int var_line = line;
-                int var_pos = pos;
-                std::string value;
-                
-                while (isVariableChar(c)) {
-                    value += c;
-                    if(!nextChar())
-                        break;
-                }
-
-                if (maybeDirective && (value == "import")) {
-                    while(isWhitespace(c))
-                        nextChar();
-                    
-                    std::string path;
-                    while(c != '\n') {
-                        path += c;
-                        nextChar();
-                    }
-
-                    bool foundPathFromLib;
-                    auto foundPath = std::make_shared<std::string>(findFile(path, filename, foundPathFromLib));
-                    if(*foundPath != "") {
-                        std::ifstream foundFile(*foundPath);
-                        runLexer(foundFile, FileLoc(foundPath, 0, 0, fromLib || foundPathFromLib));
-                    }
-                }
-                else {
-                    tokens.push_back(Token::makeVar(std::make_shared<std::string>(value), FileLoc(filenamePtr, var_line, var_pos, fromLib)));
-                }
-
-            }
-            else {
-                FileLoc loc(filenamePtr, line, pos, fromLib);
-
-                if (c == '(')       tokens.push_back(Token::makeLPar(loc));
-                else if (c == ')')  tokens.push_back(Token::makeRPar(loc));
-                else if (c == '/')  tokens.push_back(Token::makeSlash(loc));
-                else if (c == '\\') tokens.push_back(Token::makeBSlash(loc));
-
-                nextChar();
-            }
-        }
-    }
-
-    std::string findFile(const std::string& name, const std::string& origin, bool &outFromLib) {
-        std::filesystem::path originPath(origin);
-
-        outFromLib = false;
-
-        if(std::filesystem::exists(originPath.parent_path() / name))
-            return (originPath.parent_path() / name).string();
-        
-        #if defined(_WIN32) || defined(_WIN64)
-        HMODULE hModule = GetModuleHandle(NULL);
-        if(hModule) {
-            char ownPath[MAX_PATH];
-            GetModuleFileName(hModule, ownPath, MAX_PATH);
-            std::filesystem::path exePath(ownPath);
-            if(std::filesystem::exists(exePath.parent_path() / "lib" / name)) {
-                outFromLib = true;
-                return (exePath.parent_path() / "lib" / name).string();
-            }
-            if(std::filesystem::exists(exePath.parent_path().parent_path() / "lib" / name)) {
-                // in MSVC, the sbs.exe can be placed inside Debug/ folder in build-dir. So relative path to lib is ../lib/
-                outFromLib = true;
-                return (exePath.parent_path().parent_path() / "lib" / name).string();
-            }
-        }
-        #endif
-        #ifdef __unix__
-        char ownPath[PATH_MAX];
-        if (1 != readlink("/proc/self/exe", ownPath, PATH_MAX)) {
-            std::filesystem::path exePath(ownPath);
-            if(std::filesystem::exists(exePath.parent_path() / "lib" / name)) {
-                outFromLib = true;
-                return (exePath.parent_path() / "lib" / name).string();
-            }
-        }
-        #endif
-
-        throw SBSException(SBSException::Origin::LEXER, "Could not open file '" + name + "' imported from '" + origin + "'.", FileLoc(std::make_shared<std::string>(name), 0, 0, false));
-        return "";
-    }
-};
-
-List<Token> runLexer(const std::string& filename) {
-    auto filenamePtr = std::make_shared<std::string>(filename);
-    Lexer lexer;
-    std::ifstream file(filename);
-    lexer.runLexer(file, FileLoc(filenamePtr, 0, 0, false));
-
-    if(lexer.tokens.size() == 0) throw std::runtime_error("runLexer(): file " + filename + " is empty.");
-
-    lexer.tokens.push_back(Token::makeEnd(FileLoc(filenamePtr, lexer.tokens.back().loc.line + 1, 0, false)));
-
-    return lexer.tokens;
+unique_ptr<LexedFile> lexSingleFile(string_view filename, bool fromLib) {
+    std::ifstream file(string{filename});
+    auto fileText = make_unique<string>(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+    return lexSingleFile(filename, fileText, fromLib);
 }
 
-std::vector<TestCaseTokens> runLexerForTesting(const std::string& filename) {
-    std::ifstream file(filename);
-    auto filenamePtr = std::make_shared<std::string>(filename);
+unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fileText, bool fromLib, int startLine, int startPos) {
+    auto result = make_unique<LexedFile>();
+    result->filename = filename;
+    result->fileText = std::move(fileText);
 
-    List<Token> common;
-    std::vector<TestCaseTokens> tests;
-    bool firstTest = true;
+    if (result->fileText->size() == 0)
+        return result;
 
-    std::stringstream ss;
-    std::string line;
-    int lineNum = 1;
-    int startLineNum = 1; // start of current Data in stream
+    string& text = *result->fileText;
 
-    auto lex = [](std::istream& ss, const FileLoc& loc) {
-        Lexer lexer;
-        lexer.runLexer(ss, loc);
-        return lexer.tokens;
-    };
+    int line = startLine;
+    int pos = startPos;
+    int i = 0;
+    char c = text[i++];
 
-    auto lexLast = [&]() {
-        ss << std::flush;
-        if (firstTest)
-            common = lex(ss, FileLoc(filenamePtr, startLineNum, 0, false));
-        else {
-            tests.back().test = List<Token>::append(common, lex(ss, FileLoc(filenamePtr, startLineNum, 0, false)));
-            tests.back().test.push_back(Token::makeEnd(FileLoc(filenamePtr, lineNum, 0, false)));
+    // the next token could be a directive, if it is at the beginning of a line.
+    bool maybeDirective = true;
+
+    auto hasNextChar = [&]() -> bool { return i < text.size(); };
+    auto nextChar = [&]() {
+        assert(hasNextChar());
+
+        if(c == '\n') {
+            line++;
+            pos = 1;
+            maybeDirective = true;
+        } else {
+            pos++;
+            if (!(c == '_' || (c >= 'a' && c <= 'z')))
+                maybeDirective = false;
         }
-        ss = std::stringstream();
-        firstTest = false;
+
+        c = text[i++];
+    };
+    
+    while (hasNextChar()) {
+        if (isWhitespace(c)) {
+            nextChar();
+        }
+        else if(c == '#') {
+            while(c != '\n' && hasNextChar())
+                nextChar();
+        }
+        else if (isVariableChar(c)) {
+            FileLoc loc(result->filename, line, pos, fromLib); 
+
+            int i_start = i - 1;
+            while (isVariableChar(c) && hasNextChar())
+                nextChar();
+            string_view value{text.begin() + i_start, text.begin() + i};
+
+            if (maybeDirective && (value == "import")) {
+                while(isWhitespace(c) && hasNextChar())
+                    nextChar();
+                
+                int i_start_path = i - 1;
+                while(c != '\n' && hasNextChar())
+                    nextChar();
+                string_view path{text.begin() + i_start_path, text.begin() + i};
+
+                bool foundPathFromLib;
+                auto foundPath = findFile(path, loc.filename, foundPathFromLib);
+                if(foundPath != "")
+                    result->importStatements.push_back({ .tokenIndex = result->tokens.size(), .isLib = foundPathFromLib, .filename = foundPath });
+            }
+            else {
+                result->tokens.push_back(Token::makeVar(value, loc));
+            }
+
+        }
+        else {
+            FileLoc loc(result->filename, line, pos, fromLib);
+
+            if (c == '(')       result->tokens.push_back(Token::makeLPar(loc));
+            else if (c == ')')  result->tokens.push_back(Token::makeRPar(loc));
+            else if (c == '/')  result->tokens.push_back(Token::makeSlash(loc));
+            else if (c == '\\') result->tokens.push_back(Token::makeBSlash(loc));
+
+            nextChar();
+        }
+    }
+
+    return result;
+}
+
+LexerResult lexFile(string_view filename) {
+    std::ifstream file(string{filename});
+    auto fileText = make_unique<string>(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+    return lexFile(filename, fileText);
+}
+
+LexerResult lexFile(string_view filename, unique_ptr<string>& fileText, int startLine, int startPos) {
+    LexerResult result;
+
+    auto absPath = [](string_view path) { return std::filesystem::absolute(std::filesystem::path(path)).string(); };
+
+    // Read all files seperately
+
+    std::unordered_map<string, unique_ptr<LexedFile>> lexedFiles;
+    std::unordered_map<string, bool> filesToLex;
+
+    auto mainFile = lexSingleFile(filename, fileText, false, startLine, startPos);
+    for (auto s : mainFile->importStatements)
+        filesToLex.insert({absPath(s.filename), s.isLib});
+    lexedFiles.insert({string{filename}, std::move(mainFile)});
+
+    while (filesToLex.size() > 0) {
+        auto [currentFilename, isLib] = *filesToLex.begin();
+        filesToLex.erase(currentFilename);
+
+        auto lexedFile = lexSingleFile(currentFilename, isLib);
+
+        for (auto s : lexedFile->importStatements) {
+            auto path = absPath(s.filename);
+                if (!lexedFiles.contains(path))
+                    filesToLex.insert({path, s.isLib});
+        }
+
+        lexedFiles.insert({currentFilename, std::move(lexedFile)});
+    }
+
+    // Combine tokens to a coherent token list
+    auto mergeTokens = [&](string_view filename, const std::vector<string_view>& mergedFiles, auto& mergeTokens) -> void {
+        auto& file = *lexedFiles[string{filename}];
+        auto it = file.tokens.begin();
+        int i = 0;
+        int importIdx = 0;
+        while (it != file.tokens.end()) {
+            if (importIdx < file.importStatements.size() && i == file.importStatements[importIdx].tokenIndex) {
+                auto& import = file.importStatements[importIdx++];
+
+                if (std::find(mergedFiles.begin(), mergedFiles.end(), import.filename) == mergedFiles.end()) {
+                    std::vector<string_view> nextMergedFiles = mergedFiles;
+                    nextMergedFiles.push_back(filename);
+
+                    mergeTokens(file.importStatements[importIdx].filename, nextMergedFiles, mergeTokens);
+                }
+            }
+            result.tokens.push_back(*it);
+            ++it;
+            ++i;
+        }
+    };
+    mergeTokens(absPath(filename), {}, mergeTokens);
+
+    return result;
+}
+
+std::vector<LexerTestCaseResult> lexTestFile(string_view filename) {
+    std::vector<LexerTestCaseResult> result;
+
+    std::ifstream file(string{filename});
+    
+    bool beforeFirstTestCase = true;
+    string expectedContent;
+    string currentSectionContent;
+    int contentLineNum = 0;
+    bool expectError = false;
+
+    auto lexTest = [](string_view filename, string_view expectedContent, string_view currentSectionContent, bool expectError, int contentLineNum) -> LexerTestCaseResult {
+        LexerTestCaseResult result;
+        auto expectedText = make_unique<string>(expectedContent);
+        auto testText = make_unique<string>(currentSectionContent);
+        return {
+            .test     = lexFile(filename, testText, contentLineNum + 1, 0),
+            .expected = lexFile(filename, expectedText, contentLineNum, 10),
+            .expectError = expectError
+        };
     };
 
+    int lineNum = 0;
+    string line;
     while(std::getline(file, line)) {
         if (line.find("test_case ") == 0) {
             // test_case directive found, split off text
 
-            lexLast();
+            if (!beforeFirstTestCase)
+                result.push_back(lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum));
+            beforeFirstTestCase = false;
 
-            tests.push_back(TestCaseTokens(FileLoc(filenamePtr, lineNum, 0, false)));
-
-            auto expectedStr = line.substr(10);
-            if (expectedStr == "ERROR") {
-                tests.back().expectError = true;
+            expectedContent = line.substr(10);
+            if (expectedContent == "ERROR") {
+                expectError = true;
+                expectedContent = "";
             } else {
-                auto ss = std::stringstream(expectedStr);
-                tests.back().expected = List<Token>::append(common, lex(ss, FileLoc(filenamePtr, lineNum, 10, false)));
-                tests.back().expected.push_back(Token::makeEnd(FileLoc(filenamePtr, lineNum, line.size(), false)));
+                expectError = false;
             }
 
-            startLineNum = lineNum + 1;
-        } else {
-            ss << line << "\n";
+            contentLineNum = lineNum;
         }
 
         lineNum++;
     }
-    lexLast();
 
-    if(tests.size() == 0) throw std::runtime_error("runLexerForTesting(): file " + filename + " is empty.");
+    if (beforeFirstTestCase)
+        throw std::runtime_error("lexTestFile(): file " + string{filename} + " does not contain test cases.");
 
-    return tests;
+    result.push_back(lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum));
+
+    return result;
+}
+
+string findFile(string_view name, string_view origin, bool &outFromLib) {
+    std::filesystem::path originPath(origin);
+
+    outFromLib = false;
+
+    if(std::filesystem::exists(originPath.parent_path() / name))
+        return (originPath.parent_path() / name).string();
+    
+    #if defined(_WIN32) || defined(_WIN64)
+    HMODULE hModule = GetModuleHandle(NULL);
+    if(hModule) {
+        char ownPath[MAX_PATH];
+        GetModuleFileName(hModule, ownPath, MAX_PATH);
+        std::filesystem::path exePath(ownPath);
+        if(std::filesystem::exists(exePath.parent_path() / "lib" / name)) {
+            outFromLib = true;
+            return (exePath.parent_path() / "lib" / name).string();
+        }
+        if(std::filesystem::exists(exePath.parent_path().parent_path() / "lib" / name)) {
+            // in MSVC, the sbs.exe can be placed inside Debug/ folder in build-dir. So relative path to lib is ../lib/
+            outFromLib = true;
+            return (exePath.parent_path().parent_path() / "lib" / name).string();
+        }
+    }
+    #endif
+    #ifdef __unix__
+    char ownPath[PATH_MAX];
+    if (1 != readlink("/proc/self/exe", ownPath, PATH_MAX)) {
+        std::filesystem::path exePath(ownPath);
+        if(std::filesystem::exists(exePath.parent_path() / "lib" / name)) {
+            outFromLib = true;
+            return (exePath.parent_path() / "lib" / name).string();
+        }
+    }
+    #endif
+
+    throw SBSException(SBSException::Origin::LEXER, "Could not open file '" + string{name} + "' imported from '" + string{origin} + "'.", FileLoc(name, 0, 0, false));
 }

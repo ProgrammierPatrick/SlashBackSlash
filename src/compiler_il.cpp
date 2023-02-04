@@ -20,11 +20,14 @@ int trace_indent_level = -1;
 #define TRACEOP(X)
 #endif
 
+using namespace std::string_literals;
+
 using Section = IL::Section;
 using std::shared_ptr;
 using std::variant;
 using std::vector;
 using std::string;
+using std::string_view;
 
 struct Lambda {
     int var;
@@ -35,9 +38,9 @@ struct Let {
     Let(const shared_ptr<Section>& section) : section(section) { }
 };
 struct Bind {
-    string name;
+    string_view name;
     variant<Lambda, Let> data;
-    Bind(const string& name, variant<Lambda, Let> data) : name(name), data(data) { }
+    Bind(string_view name, variant<Lambda, Let> data) : name(name), data(data) { }
 };
 
 // src: https://en.cppreference.com/w/cpp/utility/variant/visit
@@ -119,14 +122,14 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                 int var = nextVar++;
                 section->sectionData.push_back(Section::POP(var));
                 TRACEOP(section->sectionData.back());
-                bindings.push_back(Bind(*abs.name, Lambda(var)));
+                bindings.push_back(Bind(string{abs.name}, Lambda(var)));
                 ast = abs.ast;
             }, [&](const AST::App& app) {
                 if (app.second->isVar()) {
                     // APP with VAR: PUSH var number if bound in ABS, else PUSH section
                     auto& var = app.second->getVar();
                     TRACE("APP _ (VAR " << *var.name << ")")
-                    auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == *var.name; });
+                    auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == var.name; });
                     if (it != bindings.rend()) {
                         std::visit(overloaded{
                             [&](const Lambda& l) { section->sectionData.push_back(Section::PUSHVar(l.var)); },
@@ -137,23 +140,23 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                     else {
                         std::cerr << "bindings:\n";
                         for (const Bind& bind : bindings) std::cerr << bind.name << "\n";
-                        throw SBSException(SBSException::Origin::IL_COMPILER, "Target of VAR in APP could not be found: " + *var.name, app.second->loc);
+                        throw SBSException(SBSException::Origin::IL_COMPILER, "Target of VAR in APP could not be found: " + string{var.name}, app.second->loc);
                     }
                 }
                 else {
                     auto isPureExceptLets = [](const shared_ptr<const AST>& ast, const vector<Bind>& bindings) {
-                        for (shared_ptr<const string>& unbound : ast->getUnboundVars()) {
-                            auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == *unbound; });
+                        for (string_view unbound : ast->getUnboundVars()) {
+                            auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == unbound; });
                             if (it != bindings.rend()) {
                                 if (std::holds_alternative<Lambda>(it->data)) return false;
-                            } else throw SBSException(SBSException::Origin::IL_COMPILER, "In isPureExceptLets(): unbound variable " + *unbound + " could not be found.", ast->loc);
+                            } else throw SBSException(SBSException::Origin::IL_COMPILER, "In isPureExceptLets(): unbound variable " + string{unbound} + " could not be found.", ast->loc);
                         }
                         return true;
                     };
 
                     if (isPureExceptLets(app.second, bindings)) {
                         // APP with pure lambda: create new section {name}_pure_{i} and PUSH it
-                        string newName = name + "_l" + std::to_string(nextPureSubsection++);
+                        string newName = string{name} + "_l" + std::to_string(nextPureSubsection++);
                         TRACE("APP _ " << newName)
                         auto newSections = parseSection(newName, app.second, bindings);
                         TRACE("back in section " << name)
@@ -166,8 +169,8 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                         // APP with non pure lambda: closure needs to be allocated at runtime. new section with lifted lambda is created.
                         shared_ptr<const AST> liftedAST = app.second;
                         vector<int> closureData;
-                        for (shared_ptr<const string>& unbound : app.second->getUnboundVars()) {
-                            auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == *unbound; });
+                        for (string_view unbound : app.second->getUnboundVars()) {
+                            auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == unbound; });
                             if (it != bindings.rend()) {
                                 std::visit(overloaded{
                                     [&](const Lambda& l) {
@@ -176,9 +179,9 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                                     },
                                     [](const Let&) { } },
                                     it->data);
-                            } else throw SBSException(SBSException::Origin::IL_COMPILER, "In Closure-Generation: unbound variable " + *unbound + " could not be found", app.second->loc);
+                            } else throw SBSException(SBSException::Origin::IL_COMPILER, "In Closure-Generation: unbound variable " + string{unbound} + " could not be found", app.second->loc);
                         }
-                        string newName = name + "_c" + std::to_string(nextClosureSubsection++);
+                        string newName = string{name} + "_c" + std::to_string(nextClosureSubsection++);
                         TRACE("APP _ " << newName)
                         auto newSections = parseSection(newName, liftedAST, bindings);
                         TRACE("back in section " << name)
@@ -190,15 +193,15 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                 }
                 ast = app.first;
             }, [&](const AST::Let& let) {
-                TRACE("LET " << *let.name)
-                auto newSections = parseSection(*let.name, let.value, bindings);
+                TRACE("LET " << let.name)
+                auto newSections = parseSection(string{let.name}, let.value, bindings);
                 TRACE("back in section " << name)
                 createdSections.insert(createdSections.end(), newSections.begin(), newSections.end());
-                bindings.push_back(Bind(*let.name, Let(newSections.back())));
+                bindings.push_back(Bind(let.name, Let(newSections.back())));
                 ast = let.next;
             }, [&](const AST::Var& var) {
                 TRACE("VAR " << *var.name)
-                auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == *var.name; });
+                auto it = std::find_if(bindings.rbegin(), bindings.rend(), [&](const Bind& bind) { return bind.name == var.name; });
                 if (it != bindings.rend()) {
                     std::visit(overloaded{
                         [&](const Lambda& l) { section->sectionData.push_back(Section::JMPVar(l.var)); },
@@ -206,7 +209,7 @@ vector<shared_ptr<Section>> parseSection(const string& name, shared_ptr<const AS
                         it->data);
                     TRACEOP(section->sectionData.back());
                 }
-                else throw SBSException(SBSException::Origin::IL_COMPILER, "Could not resolve variable " + *var.name, ast->loc);
+                else throw SBSException(SBSException::Origin::IL_COMPILER, "Could not resolve variable " + string{var.name}, ast->loc);
                 reachedEnd = true;
             }},
             ast->data);

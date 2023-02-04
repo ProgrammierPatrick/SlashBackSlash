@@ -18,19 +18,19 @@ int main(int argc, char **argv) {
 
     if(cli.test) {
         if (cli.verbose) std::cerr << "run lexer" << std::endl;
-        std::vector<TestCaseTokens> tests = runLexerForTesting(cli.filename);
+        auto tests = lexTestFile(cli.filename);
 
         if(cli.printLexer) {
             for(auto& test : tests) {
                 if(!test.expectError) {
                     std::cerr << "expected: ";
-                    for(auto t : test.expected)
+                    for(auto t : test.expected.tokens)
                         if(cli.showLib || !t.loc.fromLib)
                             std::cerr << toString(t);
                     std::cerr << std::endl;
                 }
                 std::cerr << "test: ";
-                for(auto t : test.test) {
+                for(auto t : test.test.tokens) {
                     if(cli.showLib || !t.loc.fromLib)
                         std::cerr << toString(t);
                 }
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
                 bool receivedException = true;
                 try {
                     if (cli.verbose) std::cerr << "run parser" << std::endl;
-                    Exec exec(parse(test.test));
+                    Exec exec(parse(test.test.tokens));
                     while(!exec.isDone()) {
                         exec.step(false);
                         if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
@@ -57,18 +57,18 @@ int main(int argc, char **argv) {
                 } catch(SBSException&) { }
 
                 if(!receivedException) {
-                    msg = "no error in '" + *test.loc.filename + "':" + std::to_string(test.loc.line) + ".";
+                    msg = "no error in '" + cli.filename + "':" + std::to_string(test.test.tokens.front().loc.line) + ".";
                     failed = true;
                 }
             } else {
                 try {
                     if (cli.verbose) std::cerr << "run parser for expected value" << std::endl;
-                    Exec expectedExec(parse(test.expected));
+                    Exec expectedExec(parse(test.expected.tokens));
                     while(!expectedExec.isDone()) expectedExec.step(false);
                     std::string expectedState = expectedExec.printState(false);
 
                     if (cli.verbose) std::cerr << "run main parser" << std::endl;
-                    Exec exec(parse(test.test));
+                    Exec exec(parse(test.test.tokens));
                     while(!exec.isDone()) {
                         exec.step(false);
                         if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
                     if (cli.verbose) std::cerr << "check alpha equivalence" << std::endl;
                     if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
-                        msg = "result of '" + *test.loc.filename + "':" + std::to_string(test.loc.line) + " does not match expected result.";
+                        msg = "result of '" + cli.filename + "':" + std::to_string(test.test.tokens.front().loc.line) + " does not match expected result.";
                         msg += "\n  expected: " + expectedState;
                         msg += "\n  result: " + resultState;
                         failed = true;
@@ -101,17 +101,17 @@ int main(int argc, char **argv) {
         return failedAny ? -1 : 0;
     }
     else {
-        List<Token> tokens;
+        LexerResult lexed;
         try {
             if (cli.verbose) std::cerr << "run lexer" << std::endl;
-            tokens = runLexer(cli.filename);
+            lexed = lexFile(cli.filename);
         } catch(std::exception& e) {
             std::cerr << "Exception in runLexer(" << cli.filename << "): " << e.what() << std::endl;
             return -1;
         }
 
         if(cli.printLexer) {
-            for(auto t : tokens)
+            for(auto t : lexed.tokens)
                 if(cli.showLib || !t.loc.fromLib)
                     std::cerr << toString(t);
             std::cerr << std::endl;
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
         std::shared_ptr<AST> ast;
         try {
             if (cli.verbose) std::cerr << "run parser" << std::endl;
-            ast = parse(tokens);
+            ast = parse(lexed.tokens);
         } catch(std::exception& e) {
             std::cerr << "Exception in parse(tokens): " << e.what() << std::endl;
             return -1;

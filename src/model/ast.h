@@ -11,30 +11,27 @@
 
 struct AST {
     struct Var {
-        using str_ptr = std::shared_ptr<const std::string>;
-        const str_ptr name;
-        Var(const str_ptr& name) : name(name) { }
+        std::string_view name;
+        Var(std::string_view name) : name(name) { }
     };
     struct Let {
-        using str_ptr = std::shared_ptr<const std::string>;
         using ast_ptr = std::shared_ptr<const AST>;
-        const str_ptr name;
+        std::string_view name;
         const ast_ptr value;
         const ast_ptr next;
-        Let(const str_ptr& name, const ast_ptr& value, const ast_ptr& next) : name(name), value(value), next(next) { }
+        Let(std::string_view name, const ast_ptr& value, const ast_ptr& next) : name(name), value(value), next(next) { }
     };
     struct App {
         using ast_ptr = std::shared_ptr<const AST>;
-        const std::shared_ptr<const AST> first;
-        const std::shared_ptr<const AST> second;
+        const ast_ptr first;
+        const ast_ptr second;
         App(const ast_ptr& first, const ast_ptr& second) : first(first), second(second) { }
     };
     struct Abs {
-        using str_ptr = std::shared_ptr<const std::string>;
         using ast_ptr = std::shared_ptr<const AST>;
-        const std::shared_ptr<const std::string> name;
-        const std::shared_ptr<const AST> ast;
-        Abs(const str_ptr& name, const ast_ptr& ast) : name(name), ast(ast) { }
+        const std::string_view name;
+        const ast_ptr ast;
+        Abs(std::string_view name, const ast_ptr& ast) : name(name), ast(ast) { }
     };
 
     const std::variant<Var,Let,App,Abs> data;
@@ -47,7 +44,7 @@ struct AST {
     static bool alphaEquiv(const AST& a, const AST& b);
 
     bool isPure() const;
-    std::vector<std::shared_ptr<const std::string>> getUnboundVars() const;
+    std::vector<std::string_view> getUnboundVars() const;
 
     bool isVar() const { return std::holds_alternative<Var>(data); }
     bool isLet() const { return std::holds_alternative<Let>(data); }

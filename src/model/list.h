@@ -62,6 +62,13 @@ public:
 
     int size() const { return elementCount; }
 
+    const T& front() const {
+        if(!elem) throw std::runtime_error("List<T>::front() called on list with size 0");
+        const   Element* e = elem.get();
+        while(e->isNode()) e = e->getNode().left.get();
+        return e->getLeaf();
+    }
+
     const T& back() const {
         if(!elem) throw std::runtime_error("List<T>::back() called on list with size 0");
         const   Element* e = elem.get();

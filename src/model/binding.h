@@ -9,14 +9,14 @@
 struct AST;
 
 struct Binding {
-    const std::shared_ptr<const std::string> name;
+    std::string_view name;
     const std::shared_ptr<const AST> value;
 
     const std::shared_ptr<const AST> origin; // if fromBeta, the app-node which constructed it. else, the let-node
 
     bool fromBeta; // if binding is from beta reduction. Else, it is from let construct
 
-    Binding(const std::shared_ptr<const std::string>& name, std::shared_ptr<const AST>& value, std::shared_ptr<const AST> origin, bool fromBeta)
+    Binding(std::string_view name, std::shared_ptr<const AST>& value, std::shared_ptr<const AST> origin, bool fromBeta)
         : name(name), value(value), origin(origin), fromBeta(fromBeta) { }
 };
 

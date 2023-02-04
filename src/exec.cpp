@@ -13,23 +13,23 @@
 using namespace std::string_literals;
 
 List<Binding> simplifyBinding(const List<Binding>& list) {
-    std::unordered_set<std::string> addedBindings;
+    std::unordered_set<std::string_view> addedBindings;
     List<Binding> bindings;
     int numRemoved = 0;
     int size = 0;
     for(auto b : list) {
-        if(addedBindings.find(*b.name) == addedBindings.end()) {
+        if(addedBindings.find(b.name) == addedBindings.end()) {
             bindings.push_back(b);
-            addedBindings.insert(*b.name);
+            addedBindings.insert(b.name);
         } else numRemoved++;
         size++;
     }
     std::cerr << "simplify: " << numRemoved << "/" << size << " removed." << std::endl;
-    if(true || numRemoved == size) {
+    // if(true || numRemoved == size) { TODO: investigate this. Should this if be here or not?
         for(auto b : list)
             std::cerr << toString(b) << " ";
         std::cerr << std::endl;
-    }
+    // }
     return bindings;
 }
 
@@ -88,31 +88,31 @@ void Exec::step(bool skipLibSteps) {
         else if (stack.back()->isVar()) {
             bool found = false;
 
-
-            static std::shared_ptr<std::string> str_x = std::make_shared<std::string>("x");
-            static std::shared_ptr<std::string> str_f = std::make_shared<std::string>("f");
-            static std::shared_ptr<std::string> str_s = std::make_shared<std::string>("s");
-            static FileLoc loc(std::make_shared<std::string>("_lib_io"), 0, 0, true);
+            static auto str_x = "x"s;
+            static auto str_f = "f"s;
+            static auto str_s = "s"s;
+            static auto str_lib_io = "_lib_io"s;
+            static FileLoc loc{ str_lib_io, 0, 0, true };
             static std::shared_ptr<AST> ast_x = std::make_shared<AST>(AST::Var(str_x), loc);
             static std::shared_ptr<AST> ast_f = std::make_shared<AST>(AST::Var(str_f), loc);
             static std::shared_ptr<AST> ast_s = std::make_shared<AST>(AST::Var(str_s), loc);
             static std::shared_ptr<AST> ast_id = std::make_shared<AST>(AST::Abs(str_x, ast_x), loc);
-            if(*stack.back()->getVar().name == "__IO_PUT_BEGIN") {
+            if (stack.back()->getVar().name == "__IO_PUT_BEGIN") {
                 io_put = 0;
                 setNewNode(ast_id);
                 found = true;
-            } else if(*stack.back()->getVar().name == "__IO_PUT_INC") {
+            } else if(stack.back()->getVar().name == "__IO_PUT_INC") {
                 io_put++;
                 setNewNode(ast_id);
                 found = true;
-            } else if(*stack.back()->getVar().name == "__IO_PUT_DONE") {
+            } else if(stack.back()->getVar().name == "__IO_PUT_DONE") {
                 std::cout << io_put << std::flush;
                 setNewNode(ast_id);
                 found = true;
-            } else if(*stack.back()->getVar().name == "__IO_EOF") {
+            } else if(stack.back()->getVar().name == "__IO_EOF") {
                 found = true;
                 running = false;
-            } else if(*stack.back()->getVar().name == "__IO_GET") {
+            } else if(stack.back()->getVar().name == "__IO_GET") {
                 char c;
                 std::cin.get(c);
                 // cn = \f \z f (f (f z))
@@ -128,9 +128,9 @@ void Exec::step(bool skipLibSteps) {
                 found = true;
             }
 
-            for(int i = stack.size() - 1; !found && i >= 0; i--) {
+            for (int i = static_cast<int>(stack.size()) - 1; !found && i >= 0; i--) {
                 auto it = std::find_if(stack[i]->bindings.begin(), stack[i]->bindings.end(), [&](auto b) {
-                    return *b.name == *stack.back()->getVar().name;
+                    return b.name == stack.back()->getVar().name;
                 });
                 if(it != stack[i]->bindings.end()) {
                     setNewNode(std::make_shared<AST>(*it->value, false));
@@ -139,10 +139,8 @@ void Exec::step(bool skipLibSteps) {
                 if(!stack[i]->getBindFromParent) break;
             }
             
-            if(!found) {
-                throw SBSException(SBSException::Origin::RUNTIME, "unbounded variable '" + *stack.back()->getVar().name + "' found.", stack.back()->loc);
-                running = false;
-            }
+            if(!found)
+                throw SBSException(SBSException::Origin::RUNTIME, "unbounded variable '" + std::string{stack.back()->getVar().name} + "' found.", stack.back()->loc);
 
             done = true;
         }
@@ -195,9 +193,9 @@ std::string printBindings(const List<Binding>& bindings, bool showLib, bool show
             validBindings.push_back(b);
     }
     if(validBindings.size() > 0) {
-        std::string s("[");
+        auto s = "["s;
         for(auto b : validBindings) {
-            s += (b.fromBeta ? '\\' : '/') + *b.name;
+            s += (b.fromBeta ? '\\' : '/') + std::string{b.name};
             if(showBindValues) {
                 s += ":(";
                 s += printStateImpl(*b.value, showLib, showBindValues);
@@ -215,12 +213,12 @@ std::string printStateImpl(const AST& node, bool showLib, bool showBindValues, b
     std::string s = printBindings(node.bindings, showLib, showBindValues);
 
     if (node.isVar())
-        return s + *node.getVar().name;
+        return s + std::string{node.getVar().name};
     if (node.isAbs())
-        return p() + s + "\\" + *node.getAbs().name + " " + printStateImpl(*node.getAbs().ast, showLib, showBindValues) + q();
+        return p() + s + "\\" + std::string{node.getAbs().name} + " " + printStateImpl(*node.getAbs().ast, showLib, showBindValues) + q();
     if (node.isLet()) {
         if(showLib || !node.loc.fromLib)
-            return p() + s + "/" + *node.getLet().name + " " + printStateImpl(*node.getLet().value, showLib, showBindValues, true) + " " + printStateImpl(*node.getLet().next, showLib, showBindValues) + q();
+            return p() + s + "/" + std::string{node.getLet().name} + " " + printStateImpl(*node.getLet().value, showLib, showBindValues, true) + " " + printStateImpl(*node.getLet().next, showLib, showBindValues) + q();
         else return s + printStateImpl(*node.getLet().next, showLib, showBindValues, parens);
     }
     if (node.isApp())

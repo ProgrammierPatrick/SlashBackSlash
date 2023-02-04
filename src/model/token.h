@@ -3,7 +3,7 @@
 
 #include <variant>
 #include <memory>
-#include <string>
+#include <string_view>
 
 #include "file_loc.h"
 
@@ -11,8 +11,8 @@
 struct Token {
 
     struct Var {
-        const std::shared_ptr<const std::string> name;
-        Var(const std::shared_ptr<const std::string>& name) : name(name) { }
+        std::string_view name;
+        Var(std::string_view name) : name(name) { }
     };
     struct LPar { };
     struct RPar { };
@@ -33,10 +33,10 @@ struct Token {
     bool isBSlash() const { return std::holds_alternative<BSlash>(data); }
     bool isEnd()    const { return std::holds_alternative<End>(data); }
 
-    std::string getVarName() const { if(!isVar()) throw std::runtime_error("Token::getVarName() called on non-var token."); return *std::get<Var>(data).name; }
+    std::string_view getVarName() const { if(!isVar()) throw std::runtime_error("Token::getVarName() called on non-var token."); return std::get<Var>(data).name; }
     const Var& getVar() const { if(!isVar()) throw std::runtime_error("Token::getVar() called on non-var token."); return std::get<Var>(data); }
 
-    static Token makeVar(const std::shared_ptr<const std::string>& name, const FileLoc& fileLoc) {
+    static Token makeVar(std::string_view name, const FileLoc& fileLoc) {
         return Token(Var(name), fileLoc);
     }
     static Token makeLPar(const FileLoc& fileLoc) { return Token(LPar(), fileLoc); }

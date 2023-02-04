@@ -1,0 +1,7 @@
+test_case (\x \y x)
+
+/id id
+/true (\t \f t)
+/👗 true
+
+👗

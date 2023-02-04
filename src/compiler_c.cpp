@@ -137,7 +137,7 @@ std::string compileToC(const IL& il, bool traceExecution) {
                     "    h[2] = 0;\n"
                     "    push(__call_num, h);\n"
                     "    return s;\n";
-            } else throw SBSException(SBSException::Origin::C_COMPILER, "Could not synthesize buildin function " + section->name, FileLoc(std::make_shared<std::string>("result.c"), 0, 0, false));
+            } else throw SBSException(SBSException::Origin::C_COMPILER, "Could not synthesize buildin function " + section->name, FileLoc("result.c", 0, 0, false));
         } else {
             size_t nextHeapVar = 0;
             for (auto& line : section->sectionData) {

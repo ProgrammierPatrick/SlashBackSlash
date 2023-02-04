@@ -95,7 +95,7 @@ std::shared_ptr<AST> parseLet(const List<Token>& tokens, int& i) {
     if(!tokens[i].isVar())
         parseError(tokens[i], "LET", "[val]");
 
-    std::shared_ptr<const std::string> name = tokens[i].getVar().name;
+    auto name = tokens[i].getVar().name;
     i++;
 
     std::shared_ptr<AST> value = parseVal(tokens, i);
@@ -115,7 +115,7 @@ std::shared_ptr<AST> parseAbs(const List<Token>& tokens, int& i) {
 
     if (!tokens[i].isVar())
         parseError(tokens[i], "ABS", "[val]");
-    std::shared_ptr<const std::string> name = tokens[i].getVar().name;
+    auto name = tokens[i].getVar().name;
     i++;
 
     std::shared_ptr<AST> ast = parseExpr(tokens, i);

@@ -22,6 +22,13 @@ int Cli::parse(int argc, char** argv) {
 
     app.add_option("filename", filename, "the file to execute")->required();
 
-    CLI11_PARSE(app, argc, argv);
-    return 0;
+    try {
+        app.parse(argc, argv);
+        return 0;
+    } catch(const CLI::CallForHelp &e) {
+        help = true;
+        return app.exit(e);
+    } catch(const CLI::ParseError &e) {
+        return app.exit(e);
+    }
 }

@@ -1,0 +1,16 @@
+import lang.sbs
+import const.sbs
+
+test_case true
+is0 0
+test_case false
+is0 1
+test_case false
+is0 5
+test_case false
+is0 7
+
+test_case 1
+first (tup 1 2)
+test_case 2
+second (tup 1 2)

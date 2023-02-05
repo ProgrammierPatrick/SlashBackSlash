@@ -13,6 +13,7 @@ struct Cli {
     bool showLib = false;
     bool test = false;
     bool verbose = false;
+    bool help = false;
     std::string filename;
 
     int parse(int argc, char** argv);

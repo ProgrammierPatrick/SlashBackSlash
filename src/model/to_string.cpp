@@ -43,7 +43,10 @@ std::string toString(const AST& ast, bool showLib) {
 }
 
 std::string toString(const Token& token) {
-    if(token.isVar()) return "\'" + std::string{token.getVarName()} + "\' ";
+    if(token.isVar()) {
+        std::string varName{ token.getVarName() };
+        return "\'" + varName + "\' ";
+    }
     else if(token.isLPar()) return "( ";
     else if(token.isRPar()) return ") ";
     else if(token.isSlash()) return "/ ";

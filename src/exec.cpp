@@ -12,27 +12,6 @@
 
 using namespace std::string_literals;
 
-List<Binding> simplifyBinding(const List<Binding>& list) {
-    std::unordered_set<std::string_view> addedBindings;
-    List<Binding> bindings;
-    int numRemoved = 0;
-    int size = 0;
-    for(auto b : list) {
-        if(addedBindings.find(b.name) == addedBindings.end()) {
-            bindings.push_back(b);
-            addedBindings.insert(b.name);
-        } else numRemoved++;
-        size++;
-    }
-    std::cerr << "simplify: " << numRemoved << "/" << size << " removed." << std::endl;
-    // if(true || numRemoved == size) { TODO: investigate this. Should this if be here or not?
-        for(auto b : list)
-            std::cerr << toString(b) << " ";
-        std::cerr << std::endl;
-    // }
-    return bindings;
-}
-
 bool Exec::isDone() {
     return !running;
 }
@@ -189,7 +168,7 @@ std::string printStateImpl(const AST& node, bool showLib, bool showBindValues, b
 std::string printBindings(const List<Binding>& bindings, bool showLib, bool showBindValues) {
     std::vector<Binding> validBindings;
     for(auto b : bindings) {
-        if(showLib || !b.origin->loc.fromLib)
+        if(showLib || !b.origin->loc.fromLib || b.fromBeta)
             validBindings.push_back(b);
     }
     if(validBindings.size() > 0) {
@@ -222,11 +201,11 @@ std::string printStateImpl(const AST& node, bool showLib, bool showBindValues, b
         else return s + printStateImpl(*node.getLet().next, showLib, showBindValues, parens);
     }
     if (node.isApp())
-        return p() + s + printStateImpl(*node.getApp().first, showLib, showBindValues, true) + " " + printStateImpl(*node.getApp().second, showLib, showBindValues, true) + q();
+        return p() + s + printStateImpl(*node.getApp().first, showLib, showBindValues, false) + " " + printStateImpl(*node.getApp().second, showLib, showBindValues, true) + q();
     
     return "ERROR_TYPE";
 }
 
 std::string Exec::printState(bool showLib, bool showBindValues) {
-    return "[" + std::to_string(currentStep) + "] " + printStateImpl(*root, showLib, showBindValues);// + "\n" + toString(*root, showLib);
+    return "[" + std::to_string(currentStep) + "] " + printStateImpl(*root, showLib, showBindValues);
 }

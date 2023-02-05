@@ -167,27 +167,38 @@ LexerResult lexFile(string_view filename, unique_ptr<string>& fileText, int star
     auto mergeTokens = [&](string_view filename, const std::vector<string_view>& mergedFiles, auto& mergeTokens) -> void {
         auto& file = *lexedFiles[string{filename}];
         auto it = file.tokens.begin();
-        int i = 0;
-        int importIdx = 0;
-        while (it != file.tokens.end()) {
-            if (importIdx < static_cast<int>(file.importStatements.size()) && i == file.importStatements[importIdx].tokenIndex) {
-                auto& import = file.importStatements[importIdx++];
+        int i = 0; // points to next token
 
-                if (std::find(mergedFiles.begin(), mergedFiles.end(), import.filename) == mergedFiles.end()) {
-                    std::vector<string_view> nextMergedFiles = mergedFiles;
-                    nextMergedFiles.push_back(filename);
+        for (const auto& importStatement : file.importStatements) {
 
-                    mergeTokens(import.filename, nextMergedFiles, mergeTokens);
-                }
+            // copy tokens before import statement
+            while(i < importStatement.tokenIndex) {
+                result.tokens.push_back(*it);
+                ++it;
+                ++i;
             }
+            assert(i == importStatement.tokenIndex);
+
+            // insert imported file here
+            if (std::find(mergedFiles.begin(), mergedFiles.end(), importStatement.filename) == mergedFiles.end()) {
+                std::vector<string_view> nextMergedFiles = mergedFiles;
+                nextMergedFiles.push_back(filename);
+                mergeTokens(importStatement.filename, nextMergedFiles, mergeTokens);
+            }
+        }
+
+        // copy tokens after last import statement
+        while(it != file.tokens.end()) {
             result.tokens.push_back(*it);
             ++it;
             ++i;
         }
-        result.fileData.push_back(std::move(lexedFiles[string{filename}]));
     };
     mergeTokens(absPath(filename), {}, mergeTokens);
 
+    for (auto& entry : lexedFiles)
+        result.fileData.push_back(std::move(entry.second));
+    
     FileLoc lastTokenLoc = result.tokens.size() > 0 ? result.tokens.back().loc : FileLoc{ result.fileData.front()->filename, 1, 1, false };
     result.tokens.push_back(Token::makeEnd(FileLoc{lastTokenLoc.filename, lastTokenLoc.line + 1, 0, lastTokenLoc.fromLib}));
 

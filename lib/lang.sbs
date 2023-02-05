@@ -25,8 +25,8 @@
 # Tuples
 # ======
 /tup (\a \b \f f a b)
-/first (\t t true)
-/second (\t t false)
+/first (\t t (\a \b a))
+/second (\t t (\a \b b))
 
 # make tuple of 1, 2:
 # /t (tup 1 2)
@@ -40,7 +40,7 @@
 # =======
 /0 (\f \x x)
 /inc (\n \f \x f (n f x))
-# allias n + m
+# allias + n m
 /+ inc
 
 /add (\a \b a inc b)

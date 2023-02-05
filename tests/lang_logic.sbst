@@ -1,0 +1,33 @@
+import lang.sbs
+
+test_case true
+and true true
+test_case false
+and true false
+test_case false
+and false true
+test_case false
+and false false
+
+test_case true
+or true true
+test_case true
+or true false
+test_case true
+or false true
+test_case false
+or false false
+
+test_case false
+xor true true
+test_case true
+xor true false
+test_case true
+xor false true
+test_case false
+xor false false
+
+test_case false
+not true
+test_case true
+not false

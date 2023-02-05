@@ -14,7 +14,8 @@
 int main(int argc, char **argv) {
     Cli cli;
     int ret = cli.parse(argc, argv);
-    if(ret != 0) return ret;
+    if(ret != 0 || cli.help)
+        return ret;
 
     if(cli.test) {
         if (cli.verbose) std::cerr << "run lexer" << std::endl;

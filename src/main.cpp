@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 
                     Exec expectedExec(expectedAST);
                     while(!expectedExec.isDone()) expectedExec.step(false);
-                    std::string expectedState = expectedExec.printState(false);
+                    std::string expectedState = expectedExec.printState(cli.showLib, cli.showBindValues);
 
                     if (cli.verbose) std::cerr << "run main parser" << std::endl;
                     Exec exec(testAST);
@@ -97,11 +97,11 @@ int main(int argc, char **argv) {
                         exec.step(false);
                         if(cli.trace && !exec.isDone()) std::cerr << exec.printState(cli.showLib, cli.showBindValues) << std::endl;
                     }
-                    std::string resultState = exec.printState(false);
+                    std::string resultState = exec.printState(cli.showLib, cli.showBindValues);
 
                     if (cli.verbose) std::cerr << "check alpha equivalence" << std::endl;
                     if(!AST::alphaEquiv(*expectedExec.getRoot(), *exec.getRoot())) {
-                        msg = "result of '" + cli.filename + "':" + std::to_string(test.test.tokens.front().loc.line) + " does not match expected result.";
+                        msg = "result of '" + cli.filename + "' does not match expected result.";
                         msg += "\n  expected: " + expectedState;
                         msg += "\n  result: " + resultState;
                         failed = true;

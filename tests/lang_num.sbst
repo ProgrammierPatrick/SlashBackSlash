@@ -1,5 +1,5 @@
-include lang.sbst
-include const.sbst
+import lang.sbs
+import const.sbs
 
 test_case 1
 inc 0
@@ -14,6 +14,8 @@ test_case 0
 dec 0
 test_case 0
 dec 1
+test_case 1
+dec 2
 test_case 4
 dec 5
 test_case 6

@@ -1,12 +1,4 @@
 build*/
 .vs/
 .vscode/
-CMakeSettings.json
-CMakeCache.txt
-CMakeFiles/
-*.cmake
-Makefile
-libsbs_lib.a
-sbs
-test_list.cpp
 *.swp

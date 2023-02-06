@@ -3,6 +3,9 @@
 
 #include "model/to_string.h"
 
+using std::shared_ptr;
+using std::vector;
+
 /*
 Grammar:
 
@@ -38,20 +41,20 @@ void parseError(const Token& token, const std::string& symbol, const std::string
     throw SBSException(SBSException::Origin::PARSER, "Got Token " + toString(token) + " in " + symbol + ", but expected one of " + expected + ".", token.loc);
 }
 
-std::shared_ptr<AST> parseVal(List<Token>::const_iterator& it);
-std::shared_ptr<AST> parseExpr(List<Token>::const_iterator& it);
-std::shared_ptr<AST> parseLet(List<Token>::const_iterator& it);
-std::shared_ptr<AST> parseAbs(List<Token>::const_iterator& it);
-std::shared_ptr<AST> parseApp(List<Token>::const_iterator& it);
+shared_ptr<AST> parseVal(vector<Token>::const_iterator& it);
+shared_ptr<AST> parseExpr(vector<Token>::const_iterator& it);
+shared_ptr<AST> parseLet(vector<Token>::const_iterator& it);
+shared_ptr<AST> parseAbs(vector<Token>::const_iterator& it);
+shared_ptr<AST> parseApp(vector<Token>::const_iterator& it);
 
 
-std::shared_ptr<AST> parse(const List<Token>& tokens) {
+shared_ptr<AST> parse(const vector<Token>& tokens) {
     auto it = tokens.begin();
     return parseExpr(it);
 }
 
 // VAL  = ( EXPR ) | VAR
-std::shared_ptr<AST> parseVal(List<Token>::const_iterator& it) {
+shared_ptr<AST> parseVal(vector<Token>::const_iterator& it) {
     if (it->isVar()) {
         Token token = *it;
         ++it;
@@ -73,7 +76,7 @@ std::shared_ptr<AST> parseVal(List<Token>::const_iterator& it) {
 }
 
 // EXPR = APP | LET | ABS
-std::shared_ptr<AST> parseExpr(List<Token>::const_iterator& it) {
+shared_ptr<AST> parseExpr(vector<Token>::const_iterator& it) {
     if (it->isLPar() || it->isVar())
         return parseApp(it);
     if (it->isSlash())
@@ -85,7 +88,7 @@ std::shared_ptr<AST> parseExpr(List<Token>::const_iterator& it) {
 }
 
 // LET  = / VAR VAL EXPR
-std::shared_ptr<AST> parseLet(List<Token>::const_iterator& it) {
+shared_ptr<AST> parseLet(vector<Token>::const_iterator& it) {
     Token token = *it;
 
     if(!it->isSlash())
@@ -98,14 +101,14 @@ std::shared_ptr<AST> parseLet(List<Token>::const_iterator& it) {
     auto name = it->getVar().name;
     ++it;
 
-    std::shared_ptr<AST> value = parseVal(it);
-    std::shared_ptr<AST> next = parseExpr(it);
+    shared_ptr<AST> value = parseVal(it);
+    shared_ptr<AST> next = parseExpr(it);
 
     return std::make_shared<AST>(AST::Let(name, value, next), token.loc);
 }
 
 // ABS  = \ VAR EXPR
-std::shared_ptr<AST> parseAbs(List<Token>::const_iterator& it) {
+shared_ptr<AST> parseAbs(vector<Token>::const_iterator& it) {
     Token token = *it;
     // auto ast = std::make_shared<AST>(AST::Type::ABS, it->file, it->line, it->pos, it->fromLib);
 
@@ -118,14 +121,14 @@ std::shared_ptr<AST> parseAbs(List<Token>::const_iterator& it) {
     auto name = it->getVar().name;
     ++it;
 
-    std::shared_ptr<AST> ast = parseExpr(it);
+    shared_ptr<AST> ast = parseExpr(it);
 
     return std::make_shared<AST>(AST::Abs(name, ast), token.loc);
 }
 
 // APP  = VAL VAL APP' | VAL
 // APP' = VAL APP' | #
-std::shared_ptr<AST> parseApp2(std::shared_ptr<AST> last, List<Token>::const_iterator& it) {
+shared_ptr<AST> parseApp2(shared_ptr<AST> last, vector<Token>::const_iterator& it) {
     if(it->isVar() || it->isLPar()) {
         Token token = *it;
         auto ast = std::make_shared<AST>(AST::App(std::move(last), parseVal(it)), token.loc);
@@ -134,7 +137,7 @@ std::shared_ptr<AST> parseApp2(std::shared_ptr<AST> last, List<Token>::const_ite
     else return last;
 }
 
-std::shared_ptr<AST> parseApp(List<Token>::const_iterator& it) {
+shared_ptr<AST> parseApp(vector<Token>::const_iterator& it) {
     auto first = parseVal(it);
 
     return parseApp2(std::move(first), it);

@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <sstream>
 #include <ranges>
+#include <cassert>
+#include <unordered_map>
 
 #ifdef __unix__
 #include <unistd.h>         // readlink
@@ -104,7 +106,7 @@ unique_ptr<LexedFile> lexSingleFile(string_view filename, unique_ptr<string>& fi
                 bool foundPathFromLib;
                 auto foundPath = findFile(path, loc.filename, foundPathFromLib);
                 if(foundPath != "")
-                    result->importStatements.push_back({ .tokenIndex = result->tokens.size(), .isLib = foundPathFromLib, .filename = foundPath });
+                    result->importStatements.push_back(LexedFile::ImportStatement{ .tokenIndex = static_cast<int>(result->tokens.size()), .isLib = foundPathFromLib, .filename = foundPath });
             }
             else {
                 result->tokens.push_back(Token::makeVar(value, loc));
@@ -237,19 +239,13 @@ LexerTestsResult lexTestFile(string_view filename) {
                 auto content = make_unique<string>(currentSectionContent);
                 result.commonCode = lexFile(filename, content);
                 currentSectionContent = "";
-
-                // completely unefficient weird hack just because we dont have pop_back()
-                int tokenCount = result.commonCode.tokens.size() - 1;
-                List<Token> tokensWithoutEnd;
-                for (int i = 0; i < tokenCount; i++)
-                    tokensWithoutEnd.push_back(result.commonCode.tokens[i]);
-                result.commonCode.tokens = tokensWithoutEnd;
+                result.commonCode.tokens.pop_back();
 
             } else {
                 auto lexerResult = lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum);
                 currentSectionContent = "";
-                lexerResult.expected.tokens.append_front(result.commonCode.tokens);
-                lexerResult.test.tokens.append_front(result.commonCode.tokens);
+                lexerResult.expected.tokens.insert(lexerResult.expected.tokens.begin(), result.commonCode.tokens.begin(), result.commonCode.tokens.end());
+                lexerResult.test.tokens.insert(lexerResult.test.tokens.begin(), result.commonCode.tokens.begin(), result.commonCode.tokens.end());
                 result.tests.push_back(std::move(lexerResult));
             } 
                 
@@ -275,8 +271,8 @@ LexerTestsResult lexTestFile(string_view filename) {
         throw std::runtime_error("lexTestFile(): file " + string{filename} + " does not contain test cases.");
 
     auto lexerResult = lexTest(filename, expectedContent, currentSectionContent, expectError, contentLineNum);
-    lexerResult.expected.tokens.append_front(result.commonCode.tokens);
-    lexerResult.test.tokens.append_front(result.commonCode.tokens);
+    lexerResult.expected.tokens.insert(lexerResult.expected.tokens.begin(), result.commonCode.tokens.begin(), result.commonCode.tokens.end());
+    lexerResult.test.tokens.insert(lexerResult.test.tokens.begin(), result.commonCode.tokens.begin(), result.commonCode.tokens.end());
     result.tests.push_back(std::move(lexerResult));
 
     return result;

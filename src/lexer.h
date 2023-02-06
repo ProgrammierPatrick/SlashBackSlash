@@ -6,13 +6,12 @@
 #include <string_view>
 #include <vector>
 
-#include "model/list.h"
 #include "model/token.h"
 
 
 // Result of tokenization of a single file. Please keep fileText in memory since the tokens use its data
 struct LexedFile {
-    List<Token> tokens;
+    std::vector<Token> tokens;
     std::string filename;
     std::unique_ptr<std::string> fileText;
 
@@ -25,7 +24,7 @@ std::unique_ptr<LexedFile> lexSingleFile(std::string_view filename, std::unique_
 
 // Result of tokenization of a program including all imports
 struct LexerResult {
-    List<Token> tokens;
+    std::vector<Token> tokens;
     std::vector<std::unique_ptr<LexedFile>> fileData;
 };
 

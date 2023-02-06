@@ -20,8 +20,8 @@ struct Token {
     struct BSlash { };
     struct End { };
 
-    const std::variant<Var, LPar, RPar, Slash, BSlash, End> data;
-    const FileLoc loc;
+    std::variant<Var, LPar, RPar, Slash, BSlash, End> data;
+    FileLoc loc;
 
     template<typename T>
     Token(const T& value, const FileLoc& loc) : data(value), loc(loc) { }

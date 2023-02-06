@@ -4,8 +4,13 @@
 # ================
 # Common functions
 # ================
+
+#fn<T> T->T
 /id (\x x)
+
+#!fn<T> (T->T)->T
 /Y (\f (\x f (x x)) (\x f (x x)))
+
 # wildcard
 /_ id
 
@@ -13,19 +18,31 @@
 # Logic
 # =====
 
+#type<T> bool: T->T->T
+#con bool
 /true  (\t \f t)
+#con bool
 /false (\t \f f)
 
+#fn bool->bool->bool
 /and (\a \b a b a)
+#fn bool->bool->bool
 /or  (\a \b a a b)
+#fn bool->bool
 /not (\a a false true)
+#fn bool->bool->bool
 /xor (\a \b a (not b) b)
 
 # ======
 # Tuples
 # ======
+
+#type<A,B,T> Tuple A B: (A->B->T)->T
+#con<A, B> A->B->Tuple A B
 /tup (\a \b \f f a b)
+#fn<A, B> Tuple A B->A
 /first (\t t (\a \b a))
+#fn<A, B> Tuple A B->B
 /second (\t t (\a \b b))
 
 # make tuple of 1, 2:
